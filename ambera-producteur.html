@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambéra — Espace Producteur</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F4F7F1;color:#1a2e1a;min-height:100vh;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#c8e6c9;border-radius:4px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(2)}}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOPBAR */
+#topbar{background:#1A5A2D;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+#topbar .logo{font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:-.01em;}
+#topbar .logo span{color:rgba(255,255,255,.4);}
+#topbar .user-info{display:flex;align-items:center;gap:10px;}
+#topbar .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4CAF65,#C8922A);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.75rem;}
+#topbar .user-name{color:#fff;font-weight:700;font-size:.82rem;}
+#topbar .user-loc{color:rgba(255,255,255,.6);font-size:.65rem;}
+#topbar .notif{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+#topbar .notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#C8922A;border:2px solid #1A5A2D;}
+
+/* NAV BOTTOM (mobile style) */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E0EDD8;display:flex;z-index:100;box-shadow:0 -2px 12px rgba(26,90,45,.08);}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;transition:background .15s;gap:3px;}
+.bnav:hover{background:#F0F7EC;}
+.bnav.active{color:#1A5A2D;}
+.bnav .bicon{font-size:1.2rem;}
+.bnav .blabel{font-size:.58rem;font-weight:600;color:#8aaa8a;letter-spacing:.02em;}
+.bnav.active .blabel{color:#1A5A2D;}
+
+/* MAIN */
+#main{padding:16px 16px 90px;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #E0EDD8;border-radius:12px;padding:16px;margin-bottom:14px;animation:pop .4s ease both;}
+.card-title{font-weight:800;font-size:.9rem;color:#1a2e1a;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+
+/* KPIs */
+#kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:#fff;border:1px solid #E0EDD8;border-radius:12px;padding:14px;animation:pop .4s ease both;text-align:center;}
+.kpi .kval{font-size:1.7rem;font-weight:900;line-height:1;margin-bottom:4px;}
+.kpi .klbl{font-size:.62rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.kpi .ksub{font-size:.65rem;color:#4CAF65;margin-top:3px;font-weight:600;}
+
+/* STATUT BADGE */
+.badge{padding:4px 10px;border-radius:20px;font-size:.62rem;font-weight:700;display:inline-block;white-space:nowrap;}
+.badge.matched{background:#E8F5E9;color:#2E7D32;}
+.badge.attente{background:#FFF8E1;color:#E65100;}
+.badge.confirme{background:#E3F2FD;color:#1565C0;}
+.badge.vendu{background:#F3E5F5;color:#6A1B9A;}
+
+/* RÉCOLTES LISTE */
+.recolte-item{border:1px solid #E0EDD8;border-radius:10px;padding:14px;margin-bottom:10px;background:#FAFDF5;transition:box-shadow .2s;cursor:pointer;}
+.recolte-item:hover{box-shadow:0 4px 14px rgba(26,90,45,.1);}
+.recolte-item.sel{border-color:#1A5A2D;background:#F0F7EC;}
+.ri-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.ri-produit{font-weight:800;font-size:.9rem;color:#1a2e1a;}
+.ri-qty{font-weight:700;font-size:.8rem;color:#1A5A2D;}
+.ri-info{display:flex;gap:16px;font-size:.68rem;color:#8aaa8a;}
+.ri-price{font-weight:700;color:#C8922A;font-size:.8rem;margin-top:6px;}
+.ri-offres{margin-top:8px;padding:8px 12px;background:#E8F5E0;border-radius:8px;font-size:.72rem;color:#1A5A2D;font-weight:600;cursor:pointer;}
+
+/* OFFRES REÇUES */
+.offre-item{border:1px solid #E0EDD8;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff;}
+.offre-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.offre-achet{font-weight:700;font-size:.82rem;color:#1a2e1a;}
+.offre-score{font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:10px;background:#E8F5E9;color:#2E7D32;}
+.offre-montant{font-size:1.1rem;font-weight:900;color:#1A5A2D;margin-bottom:4px;}
+.offre-detail{font-size:.68rem;color:#8aaa8a;margin-bottom:12px;}
+.offre-btns{display:flex;gap:8px;}
+.btn{border:none;border-radius:8px;padding:9px 16px;font-size:.72rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s,transform .1s;}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn.green{background:#1A5A2D;color:#fff;flex:1;}
+.btn.outline{background:#fff;color:#1A5A2D;border:1px solid #1A5A2D;}
+.btn.gold{background:#C8922A;color:#fff;}
+.btn.red{background:#e53935;color:#fff;}
+.btn.grey{background:#F4F7F1;color:#6a8a6a;border:1px solid #E0EDD8;}
+
+/* FORMULAIRE */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.72rem;font-weight:700;color:#1a2e1a;margin-bottom:6px;display:block;}
+.form-label span{color:#e53935;}
+.form-input{width:100%;background:#F4F7F1;border:1px solid #E0EDD8;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:#1A5A2D;background:#fff;}
+.form-select{width:100%;background:#F4F7F1;border:1px solid #E0EDD8;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;appearance:none;}
+.form-select:focus{border-color:#1A5A2D;background:#fff;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.photo-zone{border:2px dashed #E0EDD8;border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;}
+.photo-zone:hover{border-color:#1A5A2D;background:#F0F7EC;}
+.photo-zone .picon{font-size:2rem;margin-bottom:8px;}
+.photo-zone .ptxt{font-size:.75rem;color:#8aaa8a;}
+
+/* PROFIL */
+.profil-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.profil-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1A5A2D,#4CAF65);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:900;}
+.profil-name{font-size:1.1rem;font-weight:800;color:#1a2e1a;}
+.profil-loc{font-size:.72rem;color:#8aaa8a;margin-top:2px;}
+.profil-score{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.score-stars{color:#C8922A;font-size:.9rem;}
+.score-txt{font-size:.7rem;color:#8aaa8a;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #F0F7EC;}
+.stat-row:last-child{border-bottom:none;}
+.stat-lbl{font-size:.75rem;color:#6a8a6a;}
+.stat-val{font-weight:700;font-size:.82rem;color:#1a2e1a;}
+
+/* HISTORIQUE */
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid #E0EDD8;border-radius:10px;margin-bottom:8px;background:#FAFDF5;}
+.hist-left .h-prod{font-weight:700;font-size:.8rem;}
+.hist-left .h-date{font-size:.62rem;color:#8aaa8a;margin-top:2px;}
+.hist-right{text-align:right;}
+.hist-right .h-mont{font-weight:800;color:#1A5A2D;font-size:.85rem;}
+.hist-right .h-qty{font-size:.62rem;color:#8aaa8a;}
+
+/* SCORE AMBÉRA */
+.ambera-score{background:linear-gradient(135deg,#1A5A2D,#2E7D42);border-radius:12px;padding:20px;text-align:center;color:#fff;margin-bottom:14px;}
+.as-num{font-size:3.5rem;font-weight:900;line-height:1;}
+.as-label{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;opacity:.8;margin-bottom:14px;}
+.as-bar-bg{background:rgba(255,255,255,.2);border-radius:10px;height:8px;margin-bottom:6px;overflow:hidden;}
+.as-bar-fill{height:100%;border-radius:10px;background:#C8922A;}
+.as-hint{font-size:.65rem;opacity:.7;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* SECTION HEADER */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:1rem;font-weight:800;color:#1a2e1a;}
+.sec-sub{font-size:.7rem;color:#8aaa8a;margin-top:2px;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:#8aaa8a;}
+.empty .eicon{font-size:2.5rem;margin-bottom:12px;}
+.empty .etxt{font-size:.82rem;}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1A5A2D;color:#fff;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.78rem;display:none;z-index:9999;box-shadow:0 8px 24px rgba(26,90,45,.35);animation:toast .3s ease;white-space:nowrap;}
+#toast.show{display:block;}
+
+/* MODAL OVERLAY */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;}
+#modal.show{display:flex;}
+#modal-box{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:80vh;overflow-y:auto;animation:pop .3s ease;}
+#modal-title{font-weight:800;font-size:1rem;color:#1a2e1a;margin-bottom:16px;display:flex;justify-content:space-between;}
+#modal-close{cursor:pointer;color:#8aaa8a;font-size:1.2rem;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo">Amb<span>é</span>ra</div>
+  <div class="user-info">
+    <div>
+      <div class="user-name">Kofi Mensah</div>
+      <div class="user-loc">📍 Bafoussam, Cameroun</div>
+    </div>
+    <div class="avatar">KM</div>
+    <div class="notif" onclick="showToast('🔔 3 nouvelles offres reçues !')">
+      🔔
+      <span class="notif-dot"></span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div id="main">
+
+  <!-- PAGE : ACCUEIL -->
+  <div class="page active" id="page-accueil">
+
+    <!-- Score Ambéra -->
+    <div class="ambera-score" style="animation:pop .4s ease both;">
+      <div class="as-label">Votre score Ambéra</div>
+      <div class="as-num">87</div>
+      <div style="font-size:.72rem;opacity:.8;margin-bottom:12px;">Producteur de confiance ⭐⭐⭐⭐</div>
+      <div class="as-bar-bg"><div class="as-bar-fill" style="width:87%"></div></div>
+      <div class="as-hint">+5 points si vous complétez votre profil</div>
+    </div>
+
+    <!-- KPIs -->
+    <div id="kpis">
+      <div class="kpi" style="animation-delay:.05s">
+        <div class="kval" style="color:#1A5A2D;">3</div>
+        <div class="klbl">Récoltes publiées</div>
+        <div class="ksub">↑ 1 cette semaine</div>
+      </div>
+      <div class="kpi" style="animation-delay:.1s">
+        <div class="kval" style="color:#C8922A;">7</div>
+        <div class="klbl">Offres reçues</div>
+        <div class="ksub">3 nouvelles</div>
+      </div>
+      <div class="kpi" style="animation-delay:.15s">
+        <div class="kval" style="color:#1565C0;">2.4M</div>
+        <div class="klbl">XAF gagnés</div>
+        <div class="ksub">Ce mois-ci</div>
+      </div>
+      <div class="kpi" style="animation-delay:.2s">
+        <div class="kval" style="color:#6A1B9A;">5</div>
+        <div class="klbl">Ventes réalisées</div>
+        <div class="ksub">Total historique</div>
+      </div>
+    </div>
+
+    <!-- Offres urgentes -->
+    <div class="card" style="animation-delay:.25s;border-left:4px solid #C8922A;">
+      <div class="card-title">🔥 Offres à traiter <span style="background:#FFEBEE;color:#e53935;padding:2px 8px;border-radius:10px;font-size:.62rem;font-weight:700;">3 nouvelles</span></div>
+
+      <div class="offre-item">
+        <div class="offre-header">
+          <div class="offre-achet">🏭 Brasserie du Cameroun</div>
+          <div class="offre-score">Match IA 97%</div>
+        </div>
+        <div class="offre-montant">3 420 000 XAF</div>
+        <div class="offre-detail">Pour votre Maïs · 12 tonnes · Livraison Douala · Paiement Orange Money</div>
+        <div class="offre-btns">
+          <button class="btn green" onclick="acceptOffre('Brasserie du Cameroun','3 420 000 XAF')">✓ Accepter</button>
+          <button class="btn outline" onclick="showModal('brasserie')">Voir détails</button>
+          <button class="btn grey" onclick="showToast('Offre refusée')">✕</button>
+        </div>
+      </div>
+
+      <div class="offre-item">
+        <div class="offre-header">
+          <div class="offre-achet">🏪 Marché Central Yaoundé</div>
+          <div class="offre-score">Match IA 88%</div>
+        </div>
+        <div class="offre-montant">2 850 000 XAF</div>
+        <div class="offre-detail">Pour votre Maïs · 10 tonnes · Livraison Yaoundé · Paiement MTN MoMo</div>
+        <div class="offre-btns">
+          <button class="btn green" onclick="acceptOffre('Marché Central Yaoundé','2 850 000 XAF')">✓ Accepter</button>
+          <button class="btn outline" onclick="showToast('Détails affichés')">Voir détails</button>
+          <button class="btn grey" onclick="showToast('Offre refusée')">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prix du jour -->
+    <div class="card" style="animation-delay:.3s;">
+      <div class="card-title">📊 Prix du marché aujourd'hui</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <div style="text-align:center;background:#F4F7F1;border-radius:8px;padding:10px 6px;">
+          <div style="font-size:1.2rem;">🌽</div>
+          <div style="font-weight:700;font-size:.72rem;margin:3px 0;">Maïs</div>
+          <div style="font-size:.65rem;color:#8aaa8a;">285 000</div>
+          <div style="font-size:.62rem;font-weight:700;color:#2E7D32;background:#E8F5E9;padding:2px 6px;border-radius:8px;margin-top:3px;">+2.3%</div>
+        </div>
+        <div style="text-align:center;background:#F4F7F1;border-radius:8px;padding:10px 6px;">
+          <div style="font-size:1.2rem;">🍫</div>
+          <div style="font-weight:700;font-size:.72rem;margin:3px 0;">Cacao</div>
+          <div style="font-size:.65rem;color:#8aaa8a;">1 850 000</div>
+          <div style="font-size:.62rem;font-weight:700;color:#2E7D32;background:#E8F5E9;padding:2px 6px;border-radius:8px;margin-top:3px;">+1.8%</div>
+        </div>
+        <div style="text-align:center;background:#F4F7F1;border-radius:8px;padding:10px 6px;">
+          <div style="font-size:1.2rem;">🍌</div>
+          <div style="font-weight:700;font-size:.72rem;margin:3px 0;">Plantain</div>
+          <div style="font-size:.65rem;color:#8aaa8a;">125 000</div>
+          <div style="font-size:.62rem;font-weight:700;color:#C62828;background:#FFEBEE;padding:2px 6px;border-radius:8px;margin-top:3px;">-0.5%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conseil IA -->
+    <div class="card" style="animation-delay:.35s;border-left:4px solid #1A5A2D;background:linear-gradient(135deg,#F0F7EC,#fff);">
+      <div class="card-title">🧠 Conseil Ambéra IA</div>
+      <p style="font-size:.78rem;color:#2E7D42;line-height:1.6;font-weight:500;">
+        Le prix du Maïs est en hausse cette semaine (+2.3%). <strong>Bonne période pour vendre.</strong> Votre stock de 12 tonnes peut rapporter jusqu'à <strong>3 420 000 XAF</strong> si vous acceptez l'offre de la Brasserie du Cameroun avant vendredi.
+      </p>
+    </div>
+  </div>
+
+  <!-- PAGE : MES RÉCOLTES -->
+  <div class="page" id="page-recoltes">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🌾 Mes récoltes</div>
+        <div class="sec-sub">3 publications actives</div>
+      </div>
+      <button class="btn green" onclick="goPage('publier')" style="padding:8px 14px;font-size:.72rem;">+ Publier</button>
+    </div>
+
+    <div class="recolte-item" id="ri1" onclick="selectRecolte('ri1')">
+      <div class="ri-top">
+        <div>
+          <div class="ri-produit">🌽 Maïs</div>
+          <div class="ri-info"><span>📍 Bafoussam</span><span>📅 Publié il y a 2 jours</span></div>
+        </div>
+        <span class="badge matched">✦ 7 offres</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="ri-qty">12 tonnes disponibles</div>
+        <div class="ri-price">285 000 XAF/T</div>
+      </div>
+      <div class="ri-offres">🔔 7 offres reçues — Meilleure : 3 420 000 XAF →</div>
+    </div>
+
+    <div class="recolte-item" id="ri2" onclick="selectRecolte('ri2')">
+      <div class="ri-top">
+        <div>
+          <div class="ri-produit">🍌 Plantain</div>
+          <div class="ri-info"><span>📍 Bafoussam</span><span>📅 Publié il y a 5 jours</span></div>
+        </div>
+        <span class="badge attente">⏳ En attente</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="ri-qty">8 tonnes disponibles</div>
+        <div class="ri-price">125 000 XAF/T</div>
+      </div>
+      <div class="ri-offres" style="background:#FFF8E1;color:#E65100;">⏳ 2 offres en cours de traitement →</div>
+    </div>
+
+    <div class="recolte-item" id="ri3" onclick="selectRecolte('ri3')">
+      <div class="ri-top">
+        <div>
+          <div class="ri-produit">🌱 Soja</div>
+          <div class="ri-info"><span>📍 Bafoussam</span><span>📅 Publié il y a 1 semaine</span></div>
+        </div>
+        <span class="badge confirme">✓ Vendu</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="ri-qty">5 tonnes — vendu</div>
+        <div class="ri-price">420 000 XAF/T</div>
+      </div>
+      <div class="ri-offres" style="background:#E3F2FD;color:#1565C0;">✓ Vente confirmée — 2 100 000 XAF reçus →</div>
+    </div>
+  </div>
+
+  <!-- PAGE : PUBLIER UNE RÉCOLTE -->
+  <div class="page" id="page-publier">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📦 Publier une récolte</div>
+        <div class="sec-sub">Remplissez le formulaire — l'IA trouvera les meilleurs acheteurs</div>
+      </div>
+      <button class="btn grey" onclick="goPage('recoltes')" style="padding:8px 14px;font-size:.72rem;">✕ Annuler</button>
+    </div>
+
+    <div class="card">
+      <!-- Photo -->
+      <div class="form-group">
+        <label class="form-label">📷 Photo de votre récolte</label>
+        <div class="photo-zone" onclick="showToast('📷 Appareil photo ouvert')">
+          <div class="picon">📸</div>
+          <div class="ptxt">Appuyez pour prendre une photo<br><strong>L'IA analysera la qualité automatiquement</strong></div>
+        </div>
+      </div>
+
+      <!-- Produit -->
+      <div class="form-group">
+        <label class="form-label">🌾 Type de produit <span>*</span></label>
+        <select class="form-select" id="f-produit">
+          <option value="">-- Choisissez un produit --</option>
+          <option>Maïs</option>
+          <option>Cacao</option>
+          <option>Soja</option>
+          <option>Coton</option>
+          <option>Manioc</option>
+          <option>Plantain</option>
+          <option>Sorgho</option>
+          <option>Arachide</option>
+          <option>Igname</option>
+          <option>Gombo</option>
+          <option>Autre</option>
+        </select>
+      </div>
+
+      <!-- Quantité et Prix -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">⚖️ Quantité (tonnes) <span>*</span></label>
+          <input type="number" class="form-input" id="f-qty" placeholder="Ex : 10" min="0.1" step="0.1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">💰 Prix souhaité (XAF/T)</label>
+          <input type="number" class="form-input" id="f-prix" placeholder="Ex : 285000">
+        </div>
+      </div>
+
+      <!-- Qualité -->
+      <div class="form-group">
+        <label class="form-label">⭐ Qualité estimée</label>
+        <select class="form-select" id="f-qualite">
+          <option>Excellente — Grade A</option>
+          <option>Bonne — Grade B</option>
+          <option>Standard — Grade C</option>
+        </select>
+      </div>
+
+      <!-- Localisation -->
+      <div class="form-group">
+        <label class="form-label">📍 Lieu de stockage <span>*</span></label>
+        <input type="text" class="form-input" id="f-loc" placeholder="Ex : Bafoussam, marché central" value="Bafoussam">
+      </div>
+
+      <!-- Disponibilité -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">📅 Disponible dès</label>
+          <input type="date" class="form-input" id="f-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🚚 Livraison possible ?</label>
+          <select class="form-select" id="f-livraison">
+            <option>Oui, je livre</option>
+            <option>Non, à enlever</option>
+            <option>Via Ambéra Logistics</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="form-group">
+        <label class="form-label">📝 Description supplémentaire</label>
+        <textarea class="form-input" id="f-note" rows="3" placeholder="Ex : Récolte de cette saison, stockée au sec, disponible immédiatement..."></textarea>
+      </div>
+
+      <!-- Bouton soumettre -->
+      <button class="btn green" onclick="publierRecolte()" style="width:100%;padding:14px;font-size:.88rem;border-radius:10px;margin-top:4px;">
+        🚀 Publier ma récolte — L'IA cherche les acheteurs
+      </button>
+
+      <p style="text-align:center;font-size:.65rem;color:#8aaa8a;margin-top:10px;">
+        Ambéra notifiera automatiquement les acheteurs compatibles dans votre région
+      </p>
+    </div>
+  </div>
+
+  <!-- PAGE : HISTORIQUE -->
+  <div class="page" id="page-historique">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📜 Historique des ventes</div>
+        <div class="sec-sub">Total : 5 transactions · 8 520 000 XAF</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:12px 16px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
+        <div style="text-align:center;padding:10px;background:#E8F5E0;border-radius:8px;">
+          <div style="font-size:1.3rem;font-weight:900;color:#1A5A2D;">8.5M</div>
+          <div style="font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.06em;">XAF Total</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#FFF8E1;border-radius:8px;">
+          <div style="font-size:1.3rem;font-weight:900;color:#C8922A;">55T</div>
+          <div style="font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.06em;">Tonnes vendues</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#E3F2FD;border-radius:8px;">
+          <div style="font-size:1.3rem;font-weight:900;color:#1565C0;">5</div>
+          <div style="font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.06em;">Transactions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hist-item" style="animation:pop .3s ease .05s both;">
+      <div class="hist-left">
+        <div class="h-prod">🌱 Soja · 5T</div>
+        <div class="h-date">Nestlé Cameroun · Yaoundé · il y a 3 jours</div>
+      </div>
+      <div class="hist-right">
+        <div class="h-mont">2 100 000 XAF</div>
+        <div class="h-qty"><span style="background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:8px;font-size:.6rem;font-weight:700;">✓ Payé</span></div>
+      </div>
+    </div>
+
+    <div class="hist-item" style="animation:pop .3s ease .1s both;">
+      <div class="hist-left">
+        <div class="h-prod">🌽 Maïs · 15T</div>
+        <div class="h-date">Brasserie du Cameroun · Douala · il y a 2 semaines</div>
+      </div>
+      <div class="hist-right">
+        <div class="h-mont">4 275 000 XAF</div>
+        <div class="h-qty"><span style="background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:8px;font-size:.6rem;font-weight:700;">✓ Payé</span></div>
+      </div>
+    </div>
+
+    <div class="hist-item" style="animation:pop .3s ease .15s both;">
+      <div class="hist-left">
+        <div class="h-prod">🍌 Plantain · 8T</div>
+        <div class="h-date">Casino Group · Abidjan · il y a 1 mois</div>
+      </div>
+      <div class="hist-right">
+        <div class="h-mont">1 000 000 XAF</div>
+        <div class="h-qty"><span style="background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:8px;font-size:.6rem;font-weight:700;">✓ Payé</span></div>
+      </div>
+    </div>
+
+    <div class="hist-item" style="animation:pop .3s ease .2s both;">
+      <div class="hist-left">
+        <div class="h-prod">🌽 Maïs · 8T</div>
+        <div class="h-date">Marché Central · Yaoundé · il y a 6 semaines</div>
+      </div>
+      <div class="hist-right">
+        <div class="h-mont">760 000 XAF</div>
+        <div class="h-qty"><span style="background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:8px;font-size:.6rem;font-weight:700;">✓ Payé</span></div>
+      </div>
+    </div>
+
+    <div class="hist-item" style="animation:pop .3s ease .25s both;">
+      <div class="hist-left">
+        <div class="h-prod">🌱 Soja · 4T</div>
+        <div class="h-date">Exportateur EU · Paris · il y a 2 mois</div>
+      </div>
+      <div class="hist-right">
+        <div class="h-mont">385 000 XAF</div>
+        <div class="h-qty"><span style="background:#E8F5E9;color:#2E7D32;padding:2px 6px;border-radius:8px;font-size:.6rem;font-weight:700;">✓ Payé</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE : PROFIL -->
+  <div class="page" id="page-profil">
+    <div class="sec-title" style="margin-bottom:16px;">👤 Mon profil</div>
+
+    <div class="card">
+      <div class="profil-header">
+        <div class="profil-avatar">KM</div>
+        <div>
+          <div class="profil-name">Kofi Mensah</div>
+          <div class="profil-loc">📍 Bafoussam, Région de l'Ouest, Cameroun</div>
+          <div class="profil-score">
+            <span class="score-stars">⭐⭐⭐⭐</span>
+            <span class="score-txt">Producteur vérifié · Score 87/100</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-row"><span class="stat-lbl">📱 Téléphone</span><span class="stat-val">+237 677 00 00 00</span></div>
+      <div class="stat-row"><span class="stat-lbl">🌾 Surface cultivée</span><span class="stat-val">4.5 hectares</span></div>
+      <div class="stat-row"><span class="stat-lbl">🌱 Cultures principales</span><span class="stat-val">Maïs, Soja, Plantain</span></div>
+      <div class="stat-row"><span class="stat-lbl">💳 Paiement préféré</span><span class="stat-val">Orange Money</span></div>
+      <div class="stat-row"><span class="stat-lbl">📅 Membre depuis</span><span class="stat-val">Janvier 2024</span></div>
+      <div class="stat-row"><span class="stat-lbl">✅ Transactions réussies</span><span class="stat-val">5 transactions</span></div>
+
+      <button class="btn outline" style="width:100%;margin-top:16px;" onclick="showToast('✏️ Mode édition activé')">✏️ Modifier mon profil</button>
+    </div>
+
+    <div class="card" style="border-left:4px solid #C8922A;">
+      <div class="card-title">💰 Ambéra Finance — Crédit disponible</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <div style="font-size:1.4rem;font-weight:900;color:#C8922A;">500 000 XAF</div>
+          <div style="font-size:.68rem;color:#8aaa8a;">Crédit pré-approuvé basé sur votre score</div>
+        </div>
+        <div style="font-size:2rem;">🏦</div>
+      </div>
+      <button class="btn gold" style="width:100%;" onclick="showToast('💰 Demande de crédit envoyée à Ambéra Finance')">Demander ce crédit</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION BAS -->
+<div id="bottom-nav">
+  <div class="bnav active" id="nav-accueil" onclick="goPage('accueil')">
+    <span class="bicon">🏠</span>
+    <span class="blabel">Accueil</span>
+  </div>
+  <div class="bnav" id="nav-recoltes" onclick="goPage('recoltes')">
+    <span class="bicon">🌾</span>
+    <span class="blabel">Récoltes</span>
+  </div>
+  <div class="bnav" id="nav-publier" onclick="goPage('publier')">
+    <span class="bicon" style="font-size:2rem;background:#1A5A2D;color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 4px 12px rgba(26,90,45,.4);">+</span>
+    <span class="blabel">Publier</span>
+  </div>
+  <div class="bnav" id="nav-historique" onclick="goPage('historique')">
+    <span class="bicon">📜</span>
+    <span class="blabel">Historique</span>
+  </div>
+  <div class="bnav" id="nav-profil" onclick="goPage('profil')">
+    <span class="bicon">👤</span>
+    <span class="blabel">Profil</span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL DÉTAIL OFFRE -->
+<div id="modal" onclick="closeModal()">
+  <div id="modal-box" onclick="event.stopPropagation()">
+    <div id="modal-title">
+      🏭 Brasserie du Cameroun
+      <span id="modal-close" onclick="closeModal()">✕</span>
+    </div>
+    <div style="background:#E8F5E0;border-radius:10px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:1.6rem;font-weight:900;color:#1A5A2D;margin-bottom:4px;">3 420 000 XAF</div>
+      <div style="font-size:.72rem;color:#2E7D42;font-weight:600;">Match IA : 97% de compatibilité</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0F7EC;">
+        <span style="font-size:.72rem;color:#8aaa8a;">Produit demandé</span>
+        <span style="font-size:.75rem;font-weight:700;">Maïs · 12 tonnes</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0F7EC;">
+        <span style="font-size:.72rem;color:#8aaa8a;">Prix proposé</span>
+        <span style="font-size:.75rem;font-weight:700;color:#C8922A;">285 000 XAF/T</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0F7EC;">
+        <span style="font-size:.72rem;color:#8aaa8a;">Lieu de livraison</span>
+        <span style="font-size:.75rem;font-weight:700;">Douala</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F0F7EC;">
+        <span style="font-size:.72rem;color:#8aaa8a;">Mode de paiement</span>
+        <span style="font-size:.75rem;font-weight:700;">Orange Money</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;">
+        <span style="font-size:.72rem;color:#8aaa8a;">Logistique</span>
+        <span style="font-size:.75rem;font-weight:700;">Ambéra Logistics inclus</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn green" style="flex:1;" onclick="acceptOffre('Brasserie du Cameroun','3 420 000 XAF');closeModal()">✓ Accepter cette offre</button>
+      <button class="btn grey" onclick="closeModal()">Refuser</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function acceptOffre(nom, montant) {
+  showToast('✅ Offre acceptée ! ' + montant + ' — ' + nom);
+}
+
+function selectRecolte(id) {
+  document.querySelectorAll('.recolte-item').forEach(r => r.classList.remove('sel'));
+  document.getElementById(id).classList.add('sel');
+}
+
+function publierRecolte() {
+  const produit = document.getElementById('f-produit').value;
+  const qty = document.getElementById('f-qty').value;
+  if (!produit || !qty) {
+    showToast('⚠️ Remplissez le produit et la quantité');
+    return;
+  }
+  showToast('🚀 Récolte publiée ! L\'IA cherche les acheteurs...');
+  setTimeout(() => {
+    showToast('🤖 Match trouvé ! 3 acheteurs intéressés');
+    goPage('recoltes');
+  }, 2500);
+}
+
+function showModal(id) {
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+// Set today's date
+document.getElementById('f-date').valueAsDate = new Date();
+</script>
+</body>
+</html>

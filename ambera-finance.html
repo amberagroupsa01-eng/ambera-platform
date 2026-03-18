@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambéra Finance — Microcrédits</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F4F7F1;color:#1a2e1a;min-height:100vh;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#c8e6c9;border-radius:4px;}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fill{from{width:0}to{width:var(--w)}}
+@keyframes countup{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.3}}
+@keyframes slideup{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOPBAR */
+#topbar{background:linear-gradient(135deg,#C8922A,#E8B84B);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(200,146,42,.35);}
+.logo{font-size:1.4rem;font-weight:900;color:#fff;}
+.logo-sub{font-size:.65rem;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.72rem;}
+.user-info .uname{color:#fff;font-weight:700;font-size:.78rem;text-align:right;}
+.user-info .uloc{color:rgba(255,255,255,.75);font-size:.62rem;text-align:right;}
+
+/* NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #F0E8D0;display:flex;z-index:100;box-shadow:0 -2px 12px rgba(200,146,42,.1);}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;gap:3px;}
+.bnav.active .blabel{color:#C8922A;}
+.bicon{font-size:1.15rem;}
+.blabel{font-size:.57rem;font-weight:600;color:#8aaa8a;letter-spacing:.02em;}
+
+/* MAIN */
+#main{padding:16px 16px 90px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* HERO CREDIT */
+.credit-hero{background:linear-gradient(135deg,#C8922A,#E8B84B);border-radius:16px;padding:22px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;}
+.credit-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08);}
+.credit-hero::after{content:'';position:absolute;bottom:-20px;right:20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.06);}
+.ch-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;opacity:.85;margin-bottom:6px;}
+.ch-amount{font-size:2.8rem;font-weight:900;line-height:1;margin-bottom:4px;}
+.ch-sub{font-size:.72rem;opacity:.85;margin-bottom:16px;}
+.ch-bar-bg{background:rgba(255,255,255,.25);border-radius:10px;height:8px;margin-bottom:6px;}
+.ch-bar-fill{height:100%;border-radius:10px;background:#fff;transition:width 1s ease;}
+.ch-bar-labels{display:flex;justify-content:space-between;font-size:.6rem;opacity:.8;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #F0E8D0;border-radius:12px;padding:16px;margin-bottom:14px;animation:pop .4s ease both;}
+.card-title{font-weight:800;font-size:.9rem;color:#1a2e1a;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between;}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:#fff;border:1px solid #F0E8D0;border-radius:12px;padding:14px;text-align:center;}
+.kval{font-size:1.7rem;font-weight:900;line-height:1;margin-bottom:4px;}
+.klbl{font-size:.6rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.ksub{font-size:.64rem;margin-top:3px;font-weight:600;}
+
+/* SCORE GAUGE */
+.score-gauge{background:linear-gradient(135deg,#1A5A2D,#2E7D42);border-radius:12px;padding:18px;color:#fff;margin-bottom:14px;text-align:center;}
+.sg-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:10px;}
+.sg-circle{width:100px;height:100px;border-radius:50%;border:6px solid rgba(255,255,255,.2);border-top:6px solid #C8922A;border-right:6px solid #C8922A;border-bottom:6px solid #C8922A;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;position:relative;}
+.sg-num{font-size:1.8rem;font-weight:900;}
+.sg-label{font-size:.7rem;opacity:.85;margin-bottom:12px;}
+.sg-criteria{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sg-crit{background:rgba(255,255,255,.1);border-radius:8px;padding:8px;text-align:center;}
+.sg-crit-val{font-size:.88rem;font-weight:800;}
+.sg-crit-lbl{font-size:.58rem;opacity:.75;margin-top:2px;}
+
+/* OFFRES CREDIT */
+.offre-credit{border:1px solid #F0E8D0;border-radius:10px;overflow:hidden;margin-bottom:12px;}
+.oc-header{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;}
+.oc-montant{font-size:1.4rem;font-weight:900;color:#fff;}
+.oc-taux{font-size:.68rem;color:rgba(255,255,255,.85);margin-top:2px;}
+.oc-body{padding:14px;}
+.oc-details{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.oc-det{background:#F9F5EE;border-radius:8px;padding:8px;text-align:center;}
+.oc-det-val{font-weight:800;font-size:.8rem;color:#C8922A;}
+.oc-det-lbl{font-size:.58rem;color:#8aaa8a;margin-top:2px;}
+.oc-mensualite{background:#FFF8E8;border:1px solid #F0E8D0;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.oc-mens-lbl{font-size:.7rem;color:#8aaa8a;}
+.oc-mens-val{font-weight:900;color:#C8922A;font-size:.95rem;}
+
+/* REMBOURSEMENT */
+.remb-item{border:1px solid #F0E8D0;border-radius:10px;padding:14px;margin-bottom:10px;background:#FAFDF5;}
+.remb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.remb-nom{font-weight:700;font-size:.82rem;}
+.remb-progress{margin-top:4px;}
+.remb-bar-bg{height:7px;background:#F0E8D0;border-radius:4px;overflow:hidden;}
+.remb-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#C8922A,#E8B84B);}
+.remb-labels{display:flex;justify-content:space-between;font-size:.6rem;color:#8aaa8a;margin-top:4px;}
+
+/* ECHEANCIER */
+.ech-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #F9F5EE;}
+.ech-item:last-child{border-bottom:none;}
+.ech-left .ech-mois{font-weight:700;font-size:.78rem;}
+.ech-left .ech-date{font-size:.62rem;color:#8aaa8a;margin-top:2px;}
+.ech-right{text-align:right;}
+.ech-right .ech-mont{font-weight:800;font-size:.82rem;color:#C8922A;}
+
+/* FORM */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.72rem;font-weight:700;color:#1a2e1a;margin-bottom:6px;display:block;}
+.form-label span{color:#e53935;}
+.form-input{width:100%;background:#F9F5EE;border:1px solid #F0E8D0;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:#C8922A;background:#fff;}
+.form-select{width:100%;background:#F9F5EE;border:1px solid #F0E8D0;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;appearance:none;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* SLIDER */
+.slider-wrap{margin-bottom:4px;}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,#C8922A 0%,#C8922A var(--val),#F0E8D0 var(--val),#F0E8D0 100%);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#C8922A;border:3px solid #fff;box-shadow:0 2px 8px rgba(200,146,42,.4);cursor:pointer;}
+.slider-labels{display:flex;justify-content:space-between;font-size:.62rem;color:#8aaa8a;margin-top:4px;}
+.slider-val{text-align:center;font-size:1.4rem;font-weight:900;color:#C8922A;margin-bottom:6px;}
+
+/* BTNS */
+.btn{border:none;border-radius:8px;padding:10px 16px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s,transform .1s;}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px);}
+.btn.gold{background:#C8922A;color:#fff;}
+.btn.green{background:#1A5A2D;color:#fff;}
+.btn.outline{background:#fff;color:#C8922A;border:1px solid #C8922A;}
+.btn.grey{background:#F9F5EE;color:#6a8a6a;border:1px solid #F0E8D0;}
+
+/* BADGES */
+.badge{padding:3px 10px;border-radius:20px;font-size:.6rem;font-weight:700;display:inline-block;}
+.b-actif{background:#FFF0CC;color:#C8922A;}
+.b-rembourse{background:#E8F5E9;color:#2E7D32;}
+.b-retard{background:#FFEBEE;color:#C62828;}
+.b-preapprouve{background:#E3F2FD;color:#1565C0;}
+
+/* ASSURANCE */
+.assur-card{border:2px solid #1A5A2D;border-radius:10px;padding:14px;margin-bottom:10px;background:#F0F7EC;}
+.as-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.as-nom{font-weight:800;font-size:.85rem;color:#1A5A2D;}
+.as-prime{font-size:.68rem;color:#6a8a6a;}
+.as-desc{font-size:.72rem;color:#2E7D42;line-height:1.5;}
+
+/* SEC HEADER */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:1rem;font-weight:800;color:#1a2e1a;}
+.sec-sub{font-size:.68rem;color:#8aaa8a;margin-top:2px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#C8922A;color:#fff;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.78rem;display:none;z-index:9999;box-shadow:0 8px 24px rgba(200,146,42,.4);animation:toast .3s ease;white-space:nowrap;}
+#toast.show{display:block;}
+
+/* LOADING IA */
+#loading-ia{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#loading-ia.show{display:flex;}
+.loading-box{background:#fff;border-radius:16px;padding:28px 36px;text-align:center;}
+.spinner{width:48px;height:48px;border:4px solid #F0E8D0;border-top:4px solid #C8922A;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;}
+.loading-txt{font-weight:700;font-size:.88rem;color:#1a2e1a;}
+.loading-sub{font-size:.7rem;color:#8aaa8a;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div>
+    <div class="logo">🏦 Ambéra Finance</div>
+    <div class="logo-sub">Microcrédits Agricoles</div>
+  </div>
+  <div class="topbar-right">
+    <div class="user-info">
+      <div class="uname">Kofi Mensah</div>
+      <div class="uloc">📍 Bafoussam</div>
+    </div>
+    <div class="avatar">KM</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ══ PAGE ACCUEIL ══ -->
+  <div class="page active" id="page-accueil">
+
+    <!-- Crédit disponible -->
+    <div class="credit-hero" style="animation:pop .4s ease both;">
+      <div class="ch-label">💰 Crédit pré-approuvé</div>
+      <div class="ch-amount">500 000 <span style="font-size:1.2rem;">XAF</span></div>
+      <div class="ch-sub">Basé sur votre score Ambéra · Taux 8% / an</div>
+      <div class="ch-bar-bg">
+        <div class="ch-bar-fill" style="width:65%"></div>
+      </div>
+      <div class="ch-bar-labels">
+        <span>0 XAF</span>
+        <span>Utilisé : 325 000 XAF</span>
+        <span>500 000 XAF</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn" style="flex:1;background:#fff;color:#C8922A;font-weight:800;padding:12px;" onclick="goPage('demande')">💳 Demander un crédit</button>
+        <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);" onclick="goPage('remboursement')">📅 Rembourser</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi" style="animation:pop .3s ease .05s both;">
+        <div class="kval" style="color:#C8922A;">325K</div>
+        <div class="klbl">XAF emprunté</div>
+        <div class="ksub" style="color:#C8922A;">En cours</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .1s both;">
+        <div class="kval" style="color:#1A5A2D;">2</div>
+        <div class="klbl">Crédits actifs</div>
+        <div class="ksub" style="color:#2E7D32;">Bien géré ✓</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .15s both;">
+        <div class="kval" style="color:#1565C0;">100%</div>
+        <div class="klbl">Taux remboursement</div>
+        <div class="ksub" style="color:#1565C0;">Historique parfait</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .2s both;">
+        <div class="kval" style="color:#6A1B9A;">87</div>
+        <div class="klbl">Score Ambéra</div>
+        <div class="ksub" style="color:#6A1B9A;">+3 ce mois</div>
+      </div>
+    </div>
+
+    <!-- Score IA -->
+    <div class="score-gauge" style="animation:pop .4s ease .25s both;">
+      <div class="sg-title">🧠 Votre score de crédit IA</div>
+      <div class="sg-circle">
+        <div class="sg-num">87</div>
+      </div>
+      <div class="sg-label">Excellent · Accès aux meilleurs taux</div>
+      <div class="sg-criteria">
+        <div class="sg-crit">
+          <div class="sg-crit-val">⭐⭐⭐⭐</div>
+          <div class="sg-crit-lbl">Historique</div>
+        </div>
+        <div class="sg-crit">
+          <div class="sg-crit-val">4.5 ha</div>
+          <div class="sg-crit-lbl">Surface</div>
+        </div>
+        <div class="sg-crit">
+          <div class="sg-crit-val">5 ventes</div>
+          <div class="sg-crit-lbl">Transactions</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conseil IA -->
+    <div class="card" style="animation:pop .4s ease .3s both;border-left:4px solid #C8922A;">
+      <div class="card-title">🤖 Conseil Ambéra Finance IA</div>
+      <p style="font-size:.78rem;color:#5a3a00;line-height:1.65;">
+        Votre prochaine récolte de maïs est estimée à <strong>12 tonnes</strong>. Nous vous recommandons un crédit de <strong>150 000 XAF</strong> pour acheter des engrais maintenant, ce qui pourrait augmenter votre rendement de <strong>+25%</strong> et générer <strong>855 000 XAF</strong> supplémentaires à la vente.
+      </p>
+      <button class="btn gold" style="width:100%;margin-top:12px;" onclick="goPage('demande')">Demander ce crédit recommandé</button>
+    </div>
+
+  </div>
+
+  <!-- ══ PAGE DEMANDE DE CRÉDIT ══ -->
+  <div class="page" id="page-demande">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">💳 Nouvelle demande</div>
+        <div class="sec-sub">Réponse IA en moins de 2 minutes</div>
+      </div>
+      <button class="btn grey" onclick="goPage('accueil')" style="padding:7px 12px;font-size:.7rem;">✕</button>
+    </div>
+
+    <div class="card">
+      <!-- Montant slider -->
+      <div class="form-group">
+        <label class="form-label">💰 Montant souhaité <span>*</span></label>
+        <div class="slider-val" id="slider-val">150 000 XAF</div>
+        <div class="slider-wrap">
+          <input type="range" id="montant-slider" min="25000" max="500000" step="25000" value="150000"
+            style="--val:29%"
+            oninput="updateSlider(this)">
+          <div class="slider-labels"><span>25 000</span><span>500 000 XAF</span></div>
+        </div>
+      </div>
+
+      <!-- Durée -->
+      <div class="form-group">
+        <label class="form-label">📅 Durée de remboursement</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="duree-btns">
+          <div onclick="selectDuree(this,'3 mois')" class="duree-opt" style="border:2px solid #F0E8D0;background:#F9F5EE;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-weight:800;font-size:.82rem;">3</div>
+            <div style="font-size:.6rem;color:#8aaa8a;">mois</div>
+          </div>
+          <div onclick="selectDuree(this,'6 mois')" class="duree-opt" style="border:2px solid #C8922A;background:#FFF0CC;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-weight:800;font-size:.82rem;color:#C8922A;">6</div>
+            <div style="font-size:.6rem;color:#C8922A;">mois ★</div>
+          </div>
+          <div onclick="selectDuree(this,'12 mois')" class="duree-opt" style="border:2px solid #F0E8D0;background:#F9F5EE;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-weight:800;font-size:.82rem;">12</div>
+            <div style="font-size:.6rem;color:#8aaa8a;">mois</div>
+          </div>
+          <div onclick="selectDuree(this,'18 mois')" class="duree-opt" style="border:2px solid #F0E8D0;background:#F9F5EE;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-weight:800;font-size:.82rem;">18</div>
+            <div style="font-size:.6rem;color:#8aaa8a;">mois</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objectif -->
+      <div class="form-group">
+        <label class="form-label">🎯 Objectif du crédit <span>*</span></label>
+        <select class="form-select" id="objectif">
+          <option>Achat d'engrais et semences</option>
+          <option>Location d'équipement agricole</option>
+          <option>Stockage et conditionnement</option>
+          <option>Transport et logistique</option>
+          <option>Irrigation et infrastructure</option>
+          <option>Autre investissement agricole</option>
+        </select>
+      </div>
+
+      <!-- Garantie -->
+      <div class="form-group">
+        <label class="form-label">🌾 Garantie proposée</label>
+        <select class="form-select">
+          <option>Récolte en cours (4.5 ha de Maïs)</option>
+          <option>Historique transactions Ambéra Market</option>
+          <option>Contrat de vente signé avec acheteur</option>
+          <option>Équipement agricole</option>
+        </select>
+      </div>
+
+      <!-- Paiement -->
+      <div class="form-group">
+        <label class="form-label">📱 Recevoir via</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div onclick="selectPay(this)" style="border:2px solid #C8922A;background:#FFF0CC;border-radius:8px;padding:12px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.3rem;margin-bottom:4px;">📱</div>
+            <div style="font-size:.7rem;font-weight:700;color:#C8922A;">Orange Money</div>
+          </div>
+          <div onclick="selectPay(this)" style="border:2px solid #F0E8D0;background:#F9F5EE;border-radius:8px;padding:12px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.3rem;margin-bottom:4px;">📲</div>
+            <div style="font-size:.7rem;font-weight:700;color:#8aaa8a;">MTN MoMo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulation -->
+      <div style="background:#FFF0CC;border:1px solid #F0D090;border-radius:10px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:.7rem;font-weight:700;color:#C8922A;margin-bottom:10px;">📊 Simulation de remboursement</div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0D090;">
+          <span style="font-size:.72rem;color:#6a4a00;">Montant emprunté</span>
+          <span style="font-weight:800;font-size:.78rem;" id="sim-montant">150 000 XAF</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0D090;">
+          <span style="font-size:.72rem;color:#6a4a00;">Taux (votre score 87)</span>
+          <span style="font-weight:800;font-size:.78rem;color:#2E7D32;">8% / an</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0D090;">
+          <span style="font-size:.72rem;color:#6a4a00;">Durée</span>
+          <span style="font-weight:800;font-size:.78rem;" id="sim-duree">6 mois</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="font-size:.75rem;font-weight:700;color:#6a4a00;">Mensualité</span>
+          <span style="font-weight:900;font-size:1rem;color:#C8922A;" id="sim-mensualite">25 833 XAF / mois</span>
+        </div>
+      </div>
+
+      <button class="btn gold" style="width:100%;padding:14px;font-size:.88rem;border-radius:10px;" onclick="soumettreCredit()">
+        🚀 Soumettre — Analyse IA instantanée
+      </button>
+      <p style="text-align:center;font-size:.65rem;color:#8aaa8a;margin-top:10px;">Réponse en moins de 2 minutes · Sans paperasse</p>
+    </div>
+  </div>
+
+  <!-- ══ PAGE MES CRÉDITS ══ -->
+  <div class="page" id="page-credits">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📋 Mes crédits</div>
+        <div class="sec-sub">2 actifs · 3 remboursés</div>
+      </div>
+    </div>
+
+    <div style="font-size:.72rem;font-weight:700;color:#C8922A;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Actifs</div>
+
+    <div class="remb-item" style="animation:pop .3s ease both;border-left:4px solid #C8922A;">
+      <div class="remb-top">
+        <div>
+          <div class="remb-nom">🌾 Engrais & Semences</div>
+          <div style="font-size:.62rem;color:#8aaa8a;margin-top:2px;">Démarré le 15 jan 2025 · 6 mois</div>
+        </div>
+        <span class="badge b-actif">En cours</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:.72rem;color:#8aaa8a;">Montant</div>
+        <div style="font-weight:800;color:#C8922A;">200 000 XAF</div>
+      </div>
+      <div class="remb-progress">
+        <div class="remb-bar-bg"><div class="remb-bar-fill" style="width:58%"></div></div>
+        <div class="remb-labels"><span>58% remboursé</span><span>3 versements restants</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn gold" style="flex:1;font-size:.7rem;" onclick="showToast('💳 Paiement de 33 333 XAF effectué via Orange Money')">💳 Payer la mensualité</button>
+        <button class="btn grey" onclick="goPage('remboursement')">📅 Échéancier</button>
+      </div>
+    </div>
+
+    <div class="remb-item" style="animation:pop .3s ease .08s both;border-left:4px solid #C8922A;">
+      <div class="remb-top">
+        <div>
+          <div class="remb-nom">🚚 Transport & Logistique</div>
+          <div style="font-size:.62rem;color:#8aaa8a;margin-top:2px;">Démarré le 1 mars 2025 · 3 mois</div>
+        </div>
+        <span class="badge b-actif">En cours</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:.72rem;color:#8aaa8a;">Montant</div>
+        <div style="font-weight:800;color:#C8922A;">125 000 XAF</div>
+      </div>
+      <div class="remb-progress">
+        <div class="remb-bar-bg"><div class="remb-bar-fill" style="width:25%"></div></div>
+        <div class="remb-labels"><span>25% remboursé</span><span>Prochain : 20 avril</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn gold" style="flex:1;font-size:.7rem;" onclick="showToast('💳 Paiement de 41 667 XAF effectué')">💳 Payer la mensualité</button>
+        <button class="btn grey" onclick="goPage('remboursement')">📅 Échéancier</button>
+      </div>
+    </div>
+
+    <div style="font-size:.72rem;font-weight:700;color:#2E7D32;margin:16px 0 10px;text-transform:uppercase;letter-spacing:.06em;">✓ Remboursés</div>
+
+    <div style="border:1px solid #E0EDD8;border-radius:10px;overflow:hidden;">
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0F7EC;">
+        <div><div style="font-weight:700;font-size:.78rem;">🌱 Semences maïs</div><div style="font-size:.6rem;color:#8aaa8a;">75 000 XAF · 3 mois · 2024</div></div>
+        <span class="badge b-rembourse">✓ Remboursé</span>
+      </div>
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0F7EC;">
+        <div><div style="font-weight:700;font-size:.78rem;">🔧 Location tracteur</div><div style="font-size:.6rem;color:#8aaa8a;">100 000 XAF · 6 mois · 2024</div></div>
+        <span class="badge b-rembourse">✓ Remboursé</span>
+      </div>
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-weight:700;font-size:.78rem;">💧 Système irrigation</div><div style="font-size:.6rem;color:#8aaa8a;">50 000 XAF · 3 mois · 2023</div></div>
+        <span class="badge b-rembourse">✓ Remboursé</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE ÉCHÉANCIER ══ -->
+  <div class="page" id="page-remboursement">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📅 Échéancier</div>
+        <div class="sec-sub">Crédit Engrais & Semences · 200 000 XAF</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:12px 16px;margin-bottom:14px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+        <div style="background:#FFF0CC;border-radius:8px;padding:10px;">
+          <div style="font-size:1.2rem;font-weight:900;color:#C8922A;">116K</div>
+          <div style="font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.06em;">Restant</div>
+        </div>
+        <div style="background:#E8F5E0;border-radius:8px;padding:10px;">
+          <div style="font-size:1.2rem;font-weight:900;color:#1A5A2D;">84K</div>
+          <div style="font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.06em;">Payé</div>
+        </div>
+        <div style="background:#F4F7F1;border-radius:8px;padding:10px;">
+          <div style="font-size:1.2rem;font-weight:900;color:#1a2e1a;">3</div>
+          <div style="font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.06em;">Versements</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Calendrier de paiement</div>
+
+      <div class="ech-item">
+        <div class="ech-left">
+          <div class="ech-mois">✅ Versement 1</div>
+          <div class="ech-date">15 Février 2025 · Payé</div>
+        </div>
+        <div class="ech-right">
+          <div class="ech-mont" style="color:#2E7D32;">33 333 XAF</div>
+          <span class="badge b-rembourse" style="font-size:.58rem;">✓ Payé</span>
+        </div>
+      </div>
+      <div class="ech-item">
+        <div class="ech-left">
+          <div class="ech-mois">✅ Versement 2</div>
+          <div class="ech-date">15 Mars 2025 · Payé</div>
+        </div>
+        <div class="ech-right">
+          <div class="ech-mont" style="color:#2E7D32;">33 333 XAF</div>
+          <span class="badge b-rembourse" style="font-size:.58rem;">✓ Payé</span>
+        </div>
+      </div>
+      <div class="ech-item" style="background:#FFF8E8;margin:0 -16px;padding:12px 16px;">
+        <div class="ech-left">
+          <div class="ech-mois" style="color:#C8922A;">⏰ Versement 3 — À PAYER</div>
+          <div class="ech-date" style="color:#C8922A;">15 Avril 2025 · Dans 4 jours</div>
+        </div>
+        <div class="ech-right">
+          <div class="ech-mont">33 333 XAF</div>
+          <button class="btn gold" style="padding:5px 12px;font-size:.62rem;margin-top:4px;" onclick="showToast('💳 Paiement de 33 333 XAF effectué !')">Payer</button>
+        </div>
+      </div>
+      <div class="ech-item" style="opacity:.5;">
+        <div class="ech-left">
+          <div class="ech-mois">Versement 4</div>
+          <div class="ech-date">15 Mai 2025</div>
+        </div>
+        <div class="ech-right">
+          <div class="ech-mont">33 333 XAF</div>
+        </div>
+      </div>
+      <div class="ech-item" style="opacity:.5;">
+        <div class="ech-left">
+          <div class="ech-mois">Versement 5</div>
+          <div class="ech-date">15 Juin 2025</div>
+        </div>
+        <div class="ech-right">
+          <div class="ech-mont">33 333 XAF</div>
+        </div>
+      </div>
+      <div class="ech-item" style="opacity:.5;">
+        <div class="ech-left">
+          <div class="ech-mois">Versement 6 (dernier)</div>
+          <div class="ech-date">15 Juillet 2025</div>
+        </div>
+        <div class="ech-right">
+          <div class="ech-mont">33 335 XAF</div>
+        </div>
+      </div>
+
+      <button class="btn gold" onclick="showToast('💳 Paiement de 33 333 XAF effectué via Orange Money !')" style="width:100%;margin-top:16px;padding:13px;font-size:.85rem;">
+        💳 Payer le versement du 15 Avril — 33 333 XAF
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE ASSURANCE ══ -->
+  <div class="page" id="page-assurance">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🛡️ Assurance Récolte</div>
+        <div class="sec-sub">Protégez votre investissement</div>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#1A5A2D,#2E7D42);border-radius:12px;padding:18px;color:#fff;margin-bottom:14px;animation:pop .4s ease both;">
+      <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:6px;">Protection actuelle</div>
+      <div style="font-size:1.8rem;font-weight:900;margin-bottom:4px;">1 200 000 XAF</div>
+      <div style="font-size:.72rem;opacity:.85;margin-bottom:14px;">Couvre votre récolte de Maïs · 4.5 ha</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-weight:800;">Sécheresse</div>
+          <div style="font-size:.6rem;opacity:.8;margin-top:2px;">✓ Couvert</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-weight:800;">Inondation</div>
+          <div style="font-size:.6rem;opacity:.8;margin-top:2px;">✓ Couvert</div>
+        </div>
+        <div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-weight:800;">Parasites</div>
+          <div style="font-size:.6rem;opacity:.8;margin-top:2px;">✓ Couvert</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:.75rem;font-weight:700;color:#1a2e1a;margin-bottom:10px;">Formules disponibles</div>
+
+    <div class="assur-card">
+      <div class="as-header">
+        <div class="as-nom">🌿 Formule Essentielle</div>
+        <div class="as-prime">2 500 XAF / mois</div>
+      </div>
+      <div class="as-desc">Couvre sécheresse et inondation. Indemnisation jusqu'à 500 000 XAF. Idéal pour petites exploitations.</div>
+      <button class="btn green" style="width:100%;margin-top:10px;font-size:.72rem;" onclick="showToast('✅ Formule Essentielle souscrite !')">Souscrire — 2 500 XAF/mois</button>
+    </div>
+
+    <div class="assur-card" style="border-color:#C8922A;background:#FFF8E8;">
+      <div class="as-header">
+        <div class="as-nom" style="color:#C8922A;">⭐ Formule Premium</div>
+        <div class="as-prime">5 000 XAF / mois</div>
+      </div>
+      <div class="as-desc" style="color:#6a4a00;">Couverture complète : sécheresse, inondation, parasites, gel, grêle. Indemnisation jusqu'à 2 000 000 XAF. Recommandé pour votre exploitation.</div>
+      <button class="btn gold" style="width:100%;margin-top:10px;font-size:.72rem;" onclick="showToast('✅ Formule Premium souscrite ! Vous êtes protégé.')">Souscrire — 5 000 XAF/mois ★ Recommandé</button>
+    </div>
+
+    <div class="assur-card" style="border-color:#1565C0;background:#E3F2FD;">
+      <div class="as-header">
+        <div class="as-nom" style="color:#1565C0;">🏆 Formule Intégrale</div>
+        <div class="as-prime">9 000 XAF / mois</div>
+      </div>
+      <div class="as-desc" style="color:#0d3a6e;">Protection totale + perte de revenus garantie + assistance terrain. Indemnisation illimitée. Pour les grandes exploitations.</div>
+      <button class="btn blue" style="width:100%;margin-top:10px;font-size:.72rem;" onclick="showToast('📞 Conseiller Ambéra contacté pour la Formule Intégrale')">Contacter un conseiller</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION BAS -->
+<div id="bottom-nav">
+  <div class="bnav active" id="nav-accueil" onclick="goPage('accueil')">
+    <span class="bicon">🏠</span>
+    <span class="blabel">Accueil</span>
+  </div>
+  <div class="bnav" id="nav-demande" onclick="goPage('demande')">
+    <span style="font-size:1.7rem;background:#C8922A;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-14px;box-shadow:0 4px 12px rgba(200,146,42,.45);">+</span>
+    <span class="blabel">Demander</span>
+  </div>
+  <div class="bnav" id="nav-credits" onclick="goPage('credits')">
+    <span class="bicon">📋</span>
+    <span class="blabel">Mes crédits</span>
+  </div>
+  <div class="bnav" id="nav-remboursement" onclick="goPage('remboursement')">
+    <span class="bicon">📅</span>
+    <span class="blabel">Échéancier</span>
+  </div>
+  <div class="bnav" id="nav-assurance" onclick="goPage('assurance')">
+    <span class="bicon">🛡️</span>
+    <span class="blabel">Assurance</span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- LOADING IA -->
+<div id="loading-ia">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-txt">🧠 Analyse IA en cours...</div>
+    <div class="loading-sub">Score · Historique · Récolte · Risque</div>
+  </div>
+</div>
+
+<script>
+let dureeSelectionnee = '6 mois';
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function updateSlider(el) {
+  const val = parseInt(el.value);
+  const pct = ((val - 25000) / (500000 - 25000) * 100).toFixed(0);
+  el.style.setProperty('--val', pct + '%');
+  document.getElementById('slider-val').textContent = val.toLocaleString('fr-FR') + ' XAF';
+  document.getElementById('sim-montant').textContent = val.toLocaleString('fr-FR') + ' XAF';
+  updateMensualite(val);
+}
+
+function updateMensualite(montant) {
+  const dureeMap = {'3 mois':3,'6 mois':6,'12 mois':12,'18 mois':18};
+  const duree = dureeMap[dureeSelectionnee] || 6;
+  const interet = montant * 0.08 * (duree/12);
+  const total = montant + interet;
+  const mensualite = Math.ceil(total / duree);
+  document.getElementById('sim-mensualite').textContent = mensualite.toLocaleString('fr-FR') + ' XAF / mois';
+  document.getElementById('sim-duree').textContent = dureeSelectionnee;
+}
+
+function selectDuree(el, duree) {
+  document.querySelectorAll('.duree-opt').forEach(d => {
+    d.style.border = '2px solid #F0E8D0';
+    d.style.background = '#F9F5EE';
+    d.querySelector('div').style.color = '#1a2e1a';
+    if (d.querySelectorAll('div')[1]) d.querySelectorAll('div')[1].style.color = '#8aaa8a';
+  });
+  el.style.border = '2px solid #C8922A';
+  el.style.background = '#FFF0CC';
+  el.querySelector('div').style.color = '#C8922A';
+  dureeSelectionnee = duree;
+  const montant = parseInt(document.getElementById('montant-slider').value);
+  updateMensualite(montant);
+}
+
+function selectPay(el) {
+  document.querySelectorAll('[onclick="selectPay(this)"]').forEach(e => {
+    e.style.border = '2px solid #F0E8D0';
+    e.style.background = '#F9F5EE';
+    e.querySelector('div:last-child').style.color = '#8aaa8a';
+  });
+  el.style.border = '2px solid #C8922A';
+  el.style.background = '#FFF0CC';
+  el.querySelector('div:last-child').style.color = '#C8922A';
+}
+
+function soumettreCredit() {
+  const loading = document.getElementById('loading-ia');
+  loading.classList.add('show');
+  setTimeout(() => {
+    loading.classList.remove('show');
+    showToast('✅ Crédit approuvé ! Fonds disponibles sous 10 min');
+    setTimeout(() => goPage('credits'), 1200);
+  }, 2800);
+}
+
+// Init simulation
+updateMensualite(150000);
+</script>
+</body>
+</html>

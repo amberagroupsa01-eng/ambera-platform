@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambéra — Espace Acheteur</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F4F7F1;color:#1a2e1a;min-height:100vh;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#c8e6c9;border-radius:4px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(2)}}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOPBAR */
+#topbar{background:#1A5A2D;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2);}
+.logo{font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:-.01em;}
+.logo span{color:rgba(255,255,255,.35);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.company-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:7px;}
+.company-dot{width:7px;height:7px;border-radius:50%;background:#4CAF65;animation:pulse 2s infinite;}
+.company-name{color:#fff;font-size:.72rem;font-weight:700;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C8922A,#E8B84B);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.72rem;}
+
+/* NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E0EDD8;display:flex;z-index:100;box-shadow:0 -2px 12px rgba(26,90,45,.08);}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;transition:background .15s;gap:3px;}
+.bnav:hover{background:#F0F7EC;}
+.bnav.active .blabel{color:#1A5A2D;}
+.bicon{font-size:1.2rem;}
+.blabel{font-size:.58rem;font-weight:600;color:#8aaa8a;letter-spacing:.02em;}
+.bnav.active .bicon-wrap{background:#1A5A2D;}
+
+/* MAIN */
+#main{padding:16px 16px 90px;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #E0EDD8;border-radius:12px;padding:16px;margin-bottom:14px;}
+.card-title{font-weight:800;font-size:.9rem;color:#1a2e1a;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between;}
+
+/* KPIs */
+#kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:#fff;border:1px solid #E0EDD8;border-radius:12px;padding:14px;text-align:center;}
+.kval{font-size:1.8rem;font-weight:900;line-height:1;margin-bottom:4px;}
+.klbl{font-size:.6rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.ksub{font-size:.64rem;margin-top:3px;font-weight:600;}
+
+/* BADGES */
+.badge{padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:700;white-space:nowrap;display:inline-block;}
+.b-nouveau{background:#E8F5E9;color:#2E7D32;}
+.b-encours{background:#FFF8E1;color:#E65100;}
+.b-confirme{background:#E3F2FD;color:#1565C0;}
+.b-livre{background:#F3E5F5;color:#6A1B9A;}
+.b-urgent{background:#FFEBEE;color:#C62828;}
+
+/* MATCH CARDS */
+.match-card{border:1px solid #E0EDD8;border-radius:10px;overflow:hidden;margin-bottom:12px;background:#fff;transition:box-shadow .2s;cursor:pointer;}
+.match-card:hover{box-shadow:0 4px 16px rgba(26,90,45,.1);}
+.match-card.sel{border-color:#1A5A2D;}
+.mc-header{background:linear-gradient(135deg,#1A5A2D,#2E7D42);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;}
+.mc-produit{color:#fff;font-weight:800;font-size:.88rem;}
+.mc-score{background:rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:800;}
+.mc-body{padding:12px 14px;}
+.mc-producteur{font-weight:700;font-size:.82rem;color:#1a2e1a;margin-bottom:4px;}
+.mc-loc{font-size:.65rem;color:#8aaa8a;margin-bottom:10px;}
+.mc-details{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.mc-det{background:#F4F7F1;border-radius:6px;padding:8px;text-align:center;}
+.mc-det-val{font-weight:800;font-size:.82rem;color:#1A5A2D;}
+.mc-det-lbl{font-size:.58rem;color:#8aaa8a;margin-top:2px;}
+.mc-btns{display:flex;gap:8px;}
+
+/* COMMANDES */
+.cmd-item{border:1px solid #E0EDD8;border-radius:10px;padding:14px;margin-bottom:10px;background:#FAFDF5;}
+.cmd-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.cmd-produit{font-weight:800;font-size:.88rem;}
+.cmd-info{display:flex;gap:12px;font-size:.65rem;color:#8aaa8a;margin-bottom:6px;}
+.cmd-progress{margin-top:10px;}
+.prog-label{font-size:.65rem;color:#8aaa8a;margin-bottom:4px;display:flex;justify-content:space-between;}
+.prog-bar{height:6px;background:#E0EDD8;border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;background:#1A5A2D;transition:width .8s ease;}
+
+/* FORMULAIRE BESOIN */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.72rem;font-weight:700;color:#1a2e1a;margin-bottom:6px;display:block;}
+.form-label span{color:#e53935;}
+.form-input{width:100%;background:#F4F7F1;border:1px solid #E0EDD8;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:#1A5A2D;background:#fff;}
+.form-select{width:100%;background:#F4F7F1;border:1px solid #E0EDD8;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;appearance:none;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+textarea.form-input{resize:none;}
+
+/* BTNS */
+.btn{border:none;border-radius:8px;padding:10px 16px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s,transform .1s;}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.btn.green{background:#1A5A2D;color:#fff;}
+.btn.outline{background:#fff;color:#1A5A2D;border:1px solid #1A5A2D;}
+.btn.gold{background:#C8922A;color:#fff;}
+.btn.grey{background:#F4F7F1;color:#6a8a6a;border:1px solid #E0EDD8;}
+.btn.red{background:#e53935;color:#fff;}
+.btn.blue{background:#1565C0;color:#fff;}
+
+/* SEC HEADER */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:1rem;font-weight:800;color:#1a2e1a;}
+.sec-sub{font-size:.68rem;color:#8aaa8a;margin-top:2px;}
+
+/* STATS COMPANY */
+.company-card{background:linear-gradient(135deg,#1A5A2D,#2E7D42);border-radius:12px;padding:18px;color:#fff;margin-bottom:14px;}
+.cc-name{font-size:1.1rem;font-weight:900;margin-bottom:3px;}
+.cc-type{font-size:.68rem;opacity:.75;margin-bottom:14px;}
+.cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.cc-stat{background:rgba(255,255,255,.12);border-radius:8px;padding:10px;text-align:center;}
+.cc-stat-val{font-size:1.3rem;font-weight:900;}
+.cc-stat-lbl{font-size:.58rem;opacity:.8;margin-top:2px;}
+
+/* NEGOTIATION */
+.neg-item{border:1px solid #E0EDD8;border-radius:10px;padding:14px;margin-bottom:10px;background:#fff;}
+.neg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.chat-bubble{padding:10px 13px;border-radius:10px;font-size:.75rem;line-height:1.5;margin-bottom:6px;}
+.chat-eux{background:#F0F7EC;border-radius:10px 10px 10px 2px;color:#1a2e1a;}
+.chat-moi{background:#1A5A2D;color:#fff;border-radius:10px 10px 2px 10px;text-align:right;}
+.chat-time{font-size:.58rem;color:#8aaa8a;margin-bottom:8px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1A5A2D;color:#fff;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.78rem;display:none;z-index:9999;box-shadow:0 8px 24px rgba(26,90,45,.35);animation:toast .3s ease;white-space:nowrap;}
+#toast.show{display:block;}
+
+/* MODAL */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;}
+#modal.show{display:flex;}
+#modal-box{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:85vh;overflow-y:auto;animation:slideup .3s ease;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo">Amb<span>é</span>ra</div>
+  <div class="topbar-right">
+    <div class="company-badge">
+      <span class="company-dot"></span>
+      <span class="company-name">Brasserie du Cameroun</span>
+    </div>
+    <div class="avatar">BC</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ══ PAGE ACCUEIL ══ -->
+  <div class="page active" id="page-accueil">
+
+    <!-- Company Card -->
+    <div class="company-card" style="animation:pop .4s ease both;">
+      <div class="cc-name">🏭 Brasserie du Cameroun</div>
+      <div class="cc-type">Industrie agroalimentaire · Douala · Membre vérifié</div>
+      <div class="cc-stats">
+        <div class="cc-stat">
+          <div class="cc-stat-val">24</div>
+          <div class="cc-stat-lbl">Commandes</div>
+        </div>
+        <div class="cc-stat">
+          <div class="cc-stat-val">142T</div>
+          <div class="cc-stat-lbl">Achetées</div>
+        </div>
+        <div class="cc-stat">
+          <div class="cc-stat-val">98%</div>
+          <div class="cc-stat-lbl">Satisfaction</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div id="kpis">
+      <div class="kpi" style="animation:pop .3s ease .05s both;">
+        <div class="kval" style="color:#1A5A2D;">12</div>
+        <div class="klbl">Matches IA reçus</div>
+        <div class="ksub" style="color:#2E7D32;">4 nouveaux</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .1s both;">
+        <div class="kval" style="color:#C8922A;">3</div>
+        <div class="klbl">Besoins publiés</div>
+        <div class="ksub" style="color:#C8922A;">Actifs</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .15s both;">
+        <div class="kval" style="color:#1565C0;">5</div>
+        <div class="klbl">Commandes en cours</div>
+        <div class="ksub" style="color:#1565C0;">2 en livraison</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .2s both;">
+        <div class="kval" style="color:#6A1B9A;">42M</div>
+        <div class="klbl">XAF dépensés</div>
+        <div class="ksub" style="color:#6A1B9A;">Ce trimestre</div>
+      </div>
+    </div>
+
+    <!-- Matches urgents -->
+    <div class="card" style="animation:pop .4s ease .25s both;border-left:4px solid #2E7D42;">
+      <div class="card-title">
+        🤖 Meilleurs matches IA
+        <span class="badge b-nouveau">4 nouveaux</span>
+      </div>
+
+      <div class="match-card" onclick="selectMatch(this)">
+        <div class="mc-header">
+          <span class="mc-produit">🌽 Maïs · 12 tonnes</span>
+          <span class="mc-score">⭐ Score 97%</span>
+        </div>
+        <div class="mc-body">
+          <div class="mc-producteur">👨‍🌾 Kofi Mensah</div>
+          <div class="mc-loc">📍 Bafoussam · 245 km de Douala</div>
+          <div class="mc-details">
+            <div class="mc-det">
+              <div class="mc-det-val">285 000</div>
+              <div class="mc-det-lbl">XAF/Tonne</div>
+            </div>
+            <div class="mc-det">
+              <div class="mc-det-val">Grade A</div>
+              <div class="mc-det-lbl">Qualité</div>
+            </div>
+            <div class="mc-det">
+              <div class="mc-det-val">Dispo</div>
+              <div class="mc-det-lbl">Immédiat</div>
+            </div>
+          </div>
+          <div class="mc-btns">
+            <button class="btn green" style="flex:1;" onclick="event.stopPropagation();passerCommande('Kofi Mensah','Maïs','3 420 000 XAF')">✓ Commander</button>
+            <button class="btn outline" onclick="event.stopPropagation();goPage('negociation')">💬 Négocier</button>
+            <button class="btn grey" onclick="event.stopPropagation();showToast('Match ignoré')">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="match-card" onclick="selectMatch(this)">
+        <div class="mc-header" style="background:linear-gradient(135deg,#2E7D42,#4CAF65);">
+          <span class="mc-produit">🌽 Maïs · 20 tonnes</span>
+          <span class="mc-score">⭐ Score 94%</span>
+        </div>
+        <div class="mc-body">
+          <div class="mc-producteur">👨‍🌾 Hamidou Bello</div>
+          <div class="mc-loc">📍 Ngaoundéré · 520 km de Douala</div>
+          <div class="mc-details">
+            <div class="mc-det">
+              <div class="mc-det-val">278 000</div>
+              <div class="mc-det-lbl">XAF/Tonne</div>
+            </div>
+            <div class="mc-det">
+              <div class="mc-det-val">Grade B</div>
+              <div class="mc-det-lbl">Qualité</div>
+            </div>
+            <div class="mc-det">
+              <div class="mc-det-val">3 jours</div>
+              <div class="mc-det-lbl">Délai</div>
+            </div>
+          </div>
+          <div class="mc-btns">
+            <button class="btn green" style="flex:1;" onclick="event.stopPropagation();passerCommande('Hamidou Bello','Maïs','5 560 000 XAF')">✓ Commander</button>
+            <button class="btn outline" onclick="event.stopPropagation();showToast('Mode négociation ouvert')">💬 Négocier</button>
+            <button class="btn grey" onclick="event.stopPropagation();showToast('Match ignoré')">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerte prix -->
+    <div class="card" style="animation:pop .4s ease .3s both;border-left:4px solid #C8922A;background:linear-gradient(135deg,#FFFBF0,#fff);">
+      <div class="card-title">📊 Analyse de marché — IA Ambéra</div>
+      <p style="font-size:.78rem;color:#2E7D42;line-height:1.65;font-weight:500;">
+        Le prix du Maïs est actuellement à <strong>285 000 XAF/T</strong>, en hausse de 2.3%. 
+        <strong>Conseil : achetez maintenant</strong> avant la fin de saison. 
+        Stock disponible dans votre région : <strong>87 tonnes</strong> chez 6 producteurs vérifiés.
+      </p>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn green" onclick="goPage('besoin')" style="flex:1;">🎯 Publier un besoin urgent</button>
+        <button class="btn grey" onclick="showToast('Rapport complet envoyé par email')">📧 Rapport</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ PAGE MATCHES ══ -->
+  <div class="page" id="page-matches">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🤖 Tous les matches IA</div>
+        <div class="sec-sub">12 producteurs compatibles trouvés</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;background:#E8F5E0;padding:5px 10px;border-radius:20px;">
+        <span style="font-size:.55rem;animation:blink 2s infinite;color:#1A5A2D;">●</span>
+        <span style="font-size:.62rem;color:#1A5A2D;font-weight:700;">Live</span>
+      </div>
+    </div>
+
+    <!-- Filtre produit -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;">
+      <button class="btn green" style="white-space:nowrap;font-size:.65rem;padding:7px 14px;border-radius:20px;" onclick="showToast('Filtre : Tous')">Tous</button>
+      <button class="btn grey" style="white-space:nowrap;font-size:.65rem;padding:7px 14px;border-radius:20px;" onclick="showToast('Filtre : Maïs')">🌽 Maïs</button>
+      <button class="btn grey" style="white-space:nowrap;font-size:.65rem;padding:7px 14px;border-radius:20px;" onclick="showToast('Filtre : Soja')">🌱 Soja</button>
+      <button class="btn grey" style="white-space:nowrap;font-size:.65rem;padding:7px 14px;border-radius:20px;" onclick="showToast('Filtre : Sorgho')">🌾 Sorgho</button>
+    </div>
+
+    <div class="match-card">
+      <div class="mc-header"><span class="mc-produit">🌽 Maïs · 12T</span><span class="mc-score">97%</span></div>
+      <div class="mc-body">
+        <div class="mc-producteur">👨‍🌾 Kofi Mensah — Bafoussam</div>
+        <div class="mc-loc">245 km · Grade A · Disponible immédiatement</div>
+        <div class="mc-details">
+          <div class="mc-det"><div class="mc-det-val">285 000</div><div class="mc-det-lbl">XAF/T</div></div>
+          <div class="mc-det"><div class="mc-det-val">3 420 000</div><div class="mc-det-lbl">Total XAF</div></div>
+          <div class="mc-det"><div class="mc-det-val">⭐⭐⭐⭐</div><div class="mc-det-lbl">Score prod.</div></div>
+        </div>
+        <div class="mc-btns">
+          <button class="btn green" style="flex:1;" onclick="passerCommande('Kofi Mensah','Maïs 12T','3 420 000 XAF')">✓ Commander</button>
+          <button class="btn outline" onclick="goPage('negociation')">💬 Négocier</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="match-card">
+      <div class="mc-header" style="background:linear-gradient(135deg,#2E7D42,#4CAF65);"><span class="mc-produit">🌽 Maïs · 20T</span><span class="mc-score">94%</span></div>
+      <div class="mc-body">
+        <div class="mc-producteur">👨‍🌾 Hamidou Bello — Ngaoundéré</div>
+        <div class="mc-loc">520 km · Grade B · Disponible dans 3 jours</div>
+        <div class="mc-details">
+          <div class="mc-det"><div class="mc-det-val">278 000</div><div class="mc-det-lbl">XAF/T</div></div>
+          <div class="mc-det"><div class="mc-det-val">5 560 000</div><div class="mc-det-lbl">Total XAF</div></div>
+          <div class="mc-det"><div class="mc-det-val">⭐⭐⭐⭐</div><div class="mc-det-lbl">Score prod.</div></div>
+        </div>
+        <div class="mc-btns">
+          <button class="btn green" style="flex:1;" onclick="passerCommande('Hamidou Bello','Maïs 20T','5 560 000 XAF')">✓ Commander</button>
+          <button class="btn outline" onclick="showToast('Négociation ouverte')">💬 Négocier</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="match-card">
+      <div class="mc-header" style="background:linear-gradient(135deg,#C8922A,#E8B84B);"><span class="mc-produit">🌾 Sorgho · 40T</span><span class="mc-score">91%</span></div>
+      <div class="mc-body">
+        <div class="mc-producteur">👨‍🌾 Moussa Alifa — Maroua</div>
+        <div class="mc-loc">680 km · Grade A · Disponible cette semaine</div>
+        <div class="mc-details">
+          <div class="mc-det"><div class="mc-det-val">198 000</div><div class="mc-det-lbl">XAF/T</div></div>
+          <div class="mc-det"><div class="mc-det-val">7 920 000</div><div class="mc-det-lbl">Total XAF</div></div>
+          <div class="mc-det"><div class="mc-det-val">⭐⭐⭐⭐⭐</div><div class="mc-det-lbl">Score prod.</div></div>
+        </div>
+        <div class="mc-btns">
+          <button class="btn green" style="flex:1;" onclick="passerCommande('Moussa Alifa','Sorgho 40T','7 920 000 XAF')">✓ Commander</button>
+          <button class="btn outline" onclick="showToast('Négociation ouverte')">💬 Négocier</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="match-card">
+      <div class="mc-header" style="background:linear-gradient(135deg,#1565C0,#1976D2);"><span class="mc-produit">🌱 Soja · 8T</span><span class="mc-score">89%</span></div>
+      <div class="mc-body">
+        <div class="mc-producteur">👩‍🌾 Aminata Diallo — Garoua</div>
+        <div class="mc-loc">480 km · Grade A · Disponible dans 5 jours</div>
+        <div class="mc-details">
+          <div class="mc-det"><div class="mc-det-val">420 000</div><div class="mc-det-lbl">XAF/T</div></div>
+          <div class="mc-det"><div class="mc-det-val">3 360 000</div><div class="mc-det-lbl">Total XAF</div></div>
+          <div class="mc-det"><div class="mc-det-val">⭐⭐⭐⭐</div><div class="mc-det-lbl">Score prod.</div></div>
+        </div>
+        <div class="mc-btns">
+          <button class="btn green" style="flex:1;" onclick="passerCommande('Aminata Diallo','Soja 8T','3 360 000 XAF')">✓ Commander</button>
+          <button class="btn outline" onclick="showToast('Négociation ouverte')">💬 Négocier</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE PUBLIER BESOIN ══ -->
+  <div class="page" id="page-besoin">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🎯 Publier un besoin</div>
+        <div class="sec-sub">L'IA cherche les producteurs compatibles</div>
+      </div>
+      <button class="btn grey" onclick="goPage('accueil')" style="padding:7px 12px;font-size:.7rem;">✕</button>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">🌾 Produit recherché <span>*</span></label>
+        <select class="form-select" id="b-produit">
+          <option value="">-- Choisissez un produit --</option>
+          <option selected>Maïs</option>
+          <option>Soja</option>
+          <option>Sorgho</option>
+          <option>Coton</option>
+          <option>Manioc</option>
+          <option>Cacao</option>
+          <option>Plantain</option>
+          <option>Arachide</option>
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">⚖️ Quantité (tonnes) <span>*</span></label>
+          <input type="number" class="form-input" id="b-qty" placeholder="Ex : 50" value="50">
+        </div>
+        <div class="form-group">
+          <label class="form-label">💰 Budget max (XAF/T)</label>
+          <input type="number" class="form-input" id="b-budget" placeholder="Ex : 290000" value="290000">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">⭐ Qualité minimale requise</label>
+        <select class="form-select">
+          <option>Grade A — Excellente</option>
+          <option>Grade B — Bonne (acceptable)</option>
+          <option>Tous grades</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🔄 Fréquence d'achat</label>
+        <select class="form-select" id="b-freq">
+          <option>Achat unique</option>
+          <option>Mensuel</option>
+          <option selected>Trimestriel</option>
+          <option>Hebdomadaire</option>
+          <option>Annuel — Contrat long terme</option>
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">📅 Besoin avant le</label>
+          <input type="date" class="form-input" id="b-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📍 Zone de collecte</label>
+          <select class="form-select">
+            <option>Toutes régions</option>
+            <option>Ouest Cameroun</option>
+            <option>Nord Cameroun</option>
+            <option>Centre Cameroun</option>
+            <option>Tchad</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">💳 Mode de paiement préféré</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div onclick="togglePay(this)" style="border:2px solid #1A5A2D;background:#E8F5E0;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.1rem;">📱</div>
+            <div style="font-size:.62rem;font-weight:700;color:#1A5A2D;margin-top:3px;">Orange Money</div>
+          </div>
+          <div onclick="togglePay(this)" style="border:2px solid #E0EDD8;background:#F4F7F1;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.1rem;">📲</div>
+            <div style="font-size:.62rem;font-weight:700;color:#8aaa8a;margin-top:3px;">MTN MoMo</div>
+          </div>
+          <div onclick="togglePay(this)" style="border:2px solid #E0EDD8;background:#F4F7F1;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.1rem;">🏦</div>
+            <div style="font-size:.62rem;font-weight:700;color:#8aaa8a;margin-top:3px;">Virement bancaire</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">📝 Exigences particulières</label>
+        <textarea class="form-input" rows="3" placeholder="Ex : Récolte de moins de 3 mois, certifiée, conditionnée en sacs de 50kg..."></textarea>
+      </div>
+
+      <button class="btn green" onclick="publierBesoin()" style="width:100%;padding:14px;font-size:.88rem;border-radius:10px;">
+        🚀 Publier — L'IA cherche les producteurs
+      </button>
+      <p style="text-align:center;font-size:.65rem;color:#8aaa8a;margin-top:10px;">Vous recevrez les premiers matches IA en moins de 2 minutes</p>
+    </div>
+  </div>
+
+  <!-- ══ PAGE COMMANDES ══ -->
+  <div class="page" id="page-commandes">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📦 Mes commandes</div>
+        <div class="sec-sub">5 commandes actives</div>
+      </div>
+    </div>
+
+    <div class="cmd-item" style="animation:pop .3s ease both;border-left:4px solid #6A1B9A;">
+      <div class="cmd-top">
+        <div>
+          <div class="cmd-produit">🌽 Maïs · 15 tonnes</div>
+          <div class="cmd-info"><span>👨‍🌾 Kofi Mensah</span><span>📍 Bafoussam → Douala</span></div>
+        </div>
+        <span class="badge b-livre">🚚 En livraison</span>
+      </div>
+      <div style="font-weight:800;color:#1A5A2D;font-size:.88rem;margin-bottom:10px;">4 275 000 XAF</div>
+      <div class="cmd-progress">
+        <div class="prog-label"><span>Progression</span><span style="font-weight:700;color:#6A1B9A;">75% — Arrivée demain</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:75%;background:#6A1B9A;"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn blue" style="flex:1;font-size:.7rem;" onclick="showToast('📍 Suivi GPS ouvert — Camion à 82 km de Douala')">📍 Suivre en temps réel</button>
+        <button class="btn grey" onclick="showToast('📞 Appel en cours...')">📞 Contacter</button>
+      </div>
+    </div>
+
+    <div class="cmd-item" style="animation:pop .3s ease .07s both;border-left:4px solid #1565C0;">
+      <div class="cmd-top">
+        <div>
+          <div class="cmd-produit">🌾 Sorgho · 40 tonnes</div>
+          <div class="cmd-info"><span>👨‍🌾 Hamidou Bello</span><span>📍 Ngaoundéré → Douala</span></div>
+        </div>
+        <span class="badge b-confirme">✓ Confirmé</span>
+      </div>
+      <div style="font-weight:800;color:#1A5A2D;font-size:.88rem;margin-bottom:10px;">7 920 000 XAF</div>
+      <div class="cmd-progress">
+        <div class="prog-label"><span>Progression</span><span style="font-weight:700;color:#1565C0;">30% — Collecte en cours</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:30%;"></div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn blue" style="flex:1;font-size:.7rem;" onclick="showToast('📍 Collecte en cours à Ngaoundéré')">📍 Suivre</button>
+        <button class="btn grey" onclick="showToast('📞 Appel en cours...')">📞 Contacter</button>
+      </div>
+    </div>
+
+    <div class="cmd-item" style="animation:pop .3s ease .14s both;border-left:4px solid #C8922A;">
+      <div class="cmd-top">
+        <div>
+          <div class="cmd-produit">🌱 Soja · 8 tonnes</div>
+          <div class="cmd-info"><span>👩‍🌾 Aminata Diallo</span><span>📍 Garoua → Yaoundé</span></div>
+        </div>
+        <span class="badge b-encours">⏳ En attente paiement</span>
+      </div>
+      <div style="font-weight:800;color:#1A5A2D;font-size:.88rem;margin-bottom:10px;">3 360 000 XAF</div>
+      <div class="cmd-progress">
+        <div class="prog-label"><span>Progression</span><span style="font-weight:700;color:#C8922A;">10% — Paiement requis</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:10%;background:#C8922A;"></div></div>
+      </div>
+      <button class="btn gold" style="width:100%;margin-top:12px;" onclick="showToast('💳 Paiement de 3 360 000 XAF effectué via Orange Money')">💳 Payer maintenant — Orange Money</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE NÉGOCIATION ══ -->
+  <div class="page" id="page-negociation">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">💬 Négociation</div>
+        <div class="sec-sub">Kofi Mensah · Maïs 12T · Bafoussam</div>
+      </div>
+      <span class="badge b-nouveau" style="font-size:.6rem;">En cours</span>
+    </div>
+
+    <div class="card" style="padding:12px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
+        <div style="text-align:center;background:#E8F5E0;border-radius:8px;padding:10px;">
+          <div style="font-size:.62rem;color:#8aaa8a;margin-bottom:3px;">Prix demandé</div>
+          <div style="font-weight:900;color:#1A5A2D;">285 000</div>
+          <div style="font-size:.58rem;color:#8aaa8a;">XAF/T</div>
+        </div>
+        <div style="text-align:center;background:#FFF8E1;border-radius:8px;padding:10px;">
+          <div style="font-size:.62rem;color:#8aaa8a;margin-bottom:3px;">Votre offre</div>
+          <div style="font-weight:900;color:#C8922A;">270 000</div>
+          <div style="font-size:.58rem;color:#8aaa8a;">XAF/T</div>
+        </div>
+        <div style="text-align:center;background:#E3F2FD;border-radius:8px;padding:10px;">
+          <div style="font-size:.62rem;color:#8aaa8a;margin-bottom:3px;">Écart</div>
+          <div style="font-weight:900;color:#1565C0;">-5.3%</div>
+          <div style="font-size:.58rem;color:#8aaa8a;">180 000 XAF</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div style="margin-bottom:14px;display:flex;flex-direction:column;gap:10px;">
+      <div>
+        <div style="font-size:.62rem;color:#8aaa8a;margin-bottom:4px;padding-left:4px;">👨‍🌾 Kofi Mensah · il y a 2h</div>
+        <div class="chat-bubble chat-eux">Bonjour, mon maïs est de très bonne qualité, Grade A certifié. Je ne peux pas descendre en dessous de 280 000 XAF/T.</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:.62rem;color:#8aaa8a;margin-bottom:4px;padding-right:4px;">🏭 Brasserie du Cameroun · il y a 1h</div>
+        <div class="chat-bubble chat-moi">Bonjour Kofi. Votre réputation est excellente sur Ambéra. Nous proposons 270 000 XAF/T avec paiement immédiat Orange Money et nous prenons en charge la logistique.</div>
+      </div>
+      <div>
+        <div style="font-size:.62rem;color:#8aaa8a;margin-bottom:4px;padding-left:4px;">👨‍🌾 Kofi Mensah · il y a 45 min</div>
+        <div class="chat-bubble chat-eux">Je peux accepter 278 000 XAF/T si vous confirmez aujourd'hui. J'ai une autre offre à 280 000 qui expire ce soir.</div>
+      </div>
+    </div>
+
+    <!-- Actions négociation -->
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:700;color:#1a2e1a;margin-bottom:10px;">Votre réponse</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn green" style="flex:1;" onclick="showToast('✅ Accord conclu à 278 000 XAF/T — Contrat généré')">✅ Accepter 278 000 XAF/T</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn outline" style="flex:1;" onclick="showToast('💬 Contre-offre de 275 000 XAF/T envoyée')">Contre-offrir 275 000</button>
+        <button class="btn gold" onclick="showToast('🤖 IA suggère 277 500 XAF/T comme compromis optimal')">🤖 Conseil IA</button>
+      </div>
+      <textarea class="form-input" rows="2" placeholder="Écrire un message à Kofi Mensah..." style="margin-bottom:10px;"></textarea>
+      <button class="btn green" style="width:100%;" onclick="showToast('✉️ Message envoyé')">📤 Envoyer le message</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION BAS -->
+<div id="bottom-nav">
+  <div class="bnav active" id="nav-accueil" onclick="goPage('accueil')">
+    <span class="bicon">🏠</span>
+    <span class="blabel">Accueil</span>
+  </div>
+  <div class="bnav" id="nav-matches" onclick="goPage('matches')">
+    <span class="bicon">🤖</span>
+    <span class="blabel">Matches IA</span>
+  </div>
+  <div class="bnav" id="nav-besoin" onclick="goPage('besoin')">
+    <span style="font-size:2rem;background:#1A5A2D;color:#fff;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 4px 12px rgba(26,90,45,.4);">+</span>
+    <span class="blabel">Besoin</span>
+  </div>
+  <div class="bnav" id="nav-commandes" onclick="goPage('commandes')">
+    <span class="bicon">📦</span>
+    <span class="blabel">Commandes</span>
+  </div>
+  <div class="bnav" id="nav-negociation" onclick="goPage('negociation')">
+    <span class="bicon">💬</span>
+    <span class="blabel">Négocier</span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function passerCommande(prod, produit, montant) {
+  showToast('✅ Commande passée — ' + produit + ' · ' + montant);
+  setTimeout(() => goPage('commandes'), 1500);
+}
+function selectMatch(el) {
+  document.querySelectorAll('.match-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function publierBesoin() {
+  showToast('🚀 Besoin publié ! Recherche IA en cours...');
+  setTimeout(() => { showToast('🤖 12 producteurs compatibles trouvés !'); goPage('matches'); }, 2500);
+}
+function togglePay(el) {
+  document.querySelectorAll('[onclick="togglePay(this)"]').forEach(e => {
+    e.style.border = '2px solid #E0EDD8';
+    e.style.background = '#F4F7F1';
+    e.querySelector('div:last-child').style.color = '#8aaa8a';
+  });
+  el.style.border = '2px solid #1A5A2D';
+  el.style.background = '#E8F5E0';
+  el.querySelector('div:last-child').style.color = '#1A5A2D';
+}
+document.getElementById('b-date').valueAsDate = new Date(Date.now() + 7*24*60*60*1000);
+</script>
+</body>
+</html>

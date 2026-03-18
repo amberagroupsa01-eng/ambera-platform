@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambéra Market — Dashboard Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F4F7F1;color:#1a2e1a;height:100vh;overflow:hidden;display:flex;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#c8e6c9;border-radius:4px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(2)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* SIDEBAR */
+#sidebar{width:220px;background:#fff;border-right:1px solid #E0EDD8;display:flex;flex-direction:column;flex-shrink:0;box-shadow:2px 0 10px rgba(26,90,45,.06);}
+#logo{padding:20px 18px 14px;border-bottom:1px solid #E0EDD8;}
+#logo .name{font-size:1.7rem;font-weight:900;color:#1A5A2D;letter-spacing:-.02em;line-height:1;}
+#logo .tagline{font-size:.58rem;color:#8aaa8a;font-style:italic;margin-top:2px;}
+#logo .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4CAF65;animation:pulse 2s infinite;margin-right:6px;vertical-align:middle;}
+#logo .live-lbl{font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.1em;}
+#nav{flex:1;padding:12px 10px;overflow-y:auto;}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:2px;cursor:pointer;transition:background .15s;color:#6a8a6a;font-size:.76rem;}
+.ni:hover{background:rgba(26,90,45,.07);}
+.ni.active{background:#E8F5E0;color:#1A5A2D;font-weight:700;}
+.ni .icon{font-size:1rem;width:20px;text-align:center;}
+.badge{margin-left:auto;background:#e53935;color:#fff;border-radius:10px;padding:1px 7px;font-size:.58rem;font-weight:700;}
+#user{padding:14px 16px;border-top:1px solid #E0EDD8;background:#FAFDF5;display:flex;align-items:center;gap:10px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1A5A2D,#4CAF65);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.7rem;}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#topbar{height:56px;background:#fff;border-bottom:1px solid #E0EDD8;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;box-shadow:0 1px 6px rgba(26,90,45,.06);}
+#topbar .breadcrumb{font-size:.7rem;color:#8aaa8a;}
+#topbar .breadcrumb strong{color:#1A5A2D;font-weight:700;}
+#live-badge{display:flex;align-items:center;gap:7px;background:#E8F5E0;border:1px solid #c8e6c9;padding:6px 16px;border-radius:20px;font-size:.65rem;color:#1A5A2D;font-weight:600;}
+#live-badge .dot{width:7px;height:7px;border-radius:50%;background:#2E7D42;animation:pulse 1.8s infinite;}
+
+#body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px;}
+
+/* KPIs */
+#kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.kpi{background:#fff;border:1px solid #E0EDD8;border-radius:10px;padding:16px 18px;transition:box-shadow .2s,transform .2s;animation:pop .4s ease both;}
+.kpi:hover{box-shadow:0 6px 20px rgba(26,90,45,.1);transform:translateY(-2px);}
+.kpi .klabel{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#8aaa8a;margin-bottom:8px;font-weight:600;}
+.kpi .kval{font-size:2rem;font-weight:900;line-height:1;margin-bottom:6px;}
+.kpi .ksub{font-size:.64rem;color:#8aaa8a;}
+
+/* PRIX */
+#prix-section{background:#fff;border:1px solid #E0EDD8;border-radius:10px;padding:16px 20px;}
+#prix-section .sec-title{font-weight:700;color:#1a2e1a;font-size:.88rem;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+#prix-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.prix-card{text-align:center;background:#F4F7F1;border:1px solid #E0EDD8;border-radius:8px;padding:12px 8px;transition:box-shadow .2s;}
+.prix-card:hover{box-shadow:0 2px 12px rgba(26,90,45,.1);}
+.prix-card .emoji{font-size:1.5rem;margin-bottom:5px;}
+.prix-card .pnom{font-weight:700;color:#1a2e1a;margin-bottom:3px;font-size:.72rem;}
+.prix-card .pval{font-size:.64rem;color:#8aaa8a;margin-bottom:5px;}
+.prix-card .pvar{font-weight:800;font-size:.65rem;padding:2px 8px;border-radius:10px;display:inline-block;}
+.up{background:#E8F5E9;color:#2E7D32;}
+.down{background:#FFEBEE;color:#C62828;}
+
+/* BOTTOM GRID */
+#bottom{display:grid;grid-template-columns:1fr 290px;gap:14px;min-height:0;flex:1;}
+
+/* TRANSACTIONS */
+#txns{background:#fff;border:1px solid #E0EDD8;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;}
+#txns-head{padding:14px 20px;border-bottom:1px solid #E0EDD8;font-weight:700;color:#1a2e1a;flex-shrink:0;}
+#tabs{display:flex;border-bottom:1px solid #E0EDD8;padding:0 20px;flex-shrink:0;}
+.tab-btn{padding:9px 13px;font-size:.68rem;background:transparent;border:none;border-bottom:2px solid transparent;color:#8aaa8a;cursor:pointer;font-weight:400;transition:color .15s;margin-bottom:-1px;font-family:'DM Sans',sans-serif;}
+.tab-btn:hover{color:#1A5A2D;}
+.tab-btn.active{color:#1A5A2D;border-bottom-color:#1A5A2D;font-weight:700;}
+#txn-list{overflow-y:auto;flex:1;}
+.txn-row{display:grid;grid-template-columns:85px 1fr 1fr 65px 65px 115px 100px 80px;padding:10px 20px;border-bottom:1px solid #f5faf2;align-items:center;gap:8px;cursor:pointer;transition:background .1s;animation:pop .3s ease both;}
+.txn-row:hover{background:#F0F7EC;}
+.txn-row.sel{background:#E8F5E0;}
+.txn-id{font-weight:700;color:#1A5A2D;font-size:.68rem;}
+.txn-name{font-weight:600;font-size:.72rem;}
+.txn-loc{font-size:.6rem;color:#8aaa8a;}
+.statut{padding:3px 9px;border-radius:20px;font-size:.6rem;font-weight:700;white-space:nowrap;}
+.matched{background:#E8F5E9;color:#2E7D32;}
+.negociation{background:#FFF8E1;color:#E65100;}
+.confirme{background:#E3F2FD;color:#1565C0;}
+.livraison{background:#F3E5F5;color:#6A1B9A;}
+.score-wrap{display:flex;align-items:center;gap:5px;}
+.score-bar{width:40px;height:5px;background:#eee;border-radius:3px;overflow:hidden;}
+.score-fill{height:100%;border-radius:3px;}
+.score-txt{font-size:.65rem;font-weight:700;}
+
+/* DÉTAIL */
+#detail{padding:14px 20px;border-top:2px solid #E8F5E0;background:#F9FDF7;flex-shrink:0;display:none;}
+#detail.show{display:block;animation:pop .2s ease;}
+#detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+#detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+.detail-box{background:#fff;border:1px solid #E0EDD8;border-radius:8px;padding:10px 12px;}
+.detail-lbl{font-size:.58rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.detail-val{font-weight:700;font-size:.74rem;}
+#action-btns{display:flex;gap:8px;}
+.abtn{border:none;border-radius:6px;padding:8px 18px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s,transform .1s;}
+.abtn:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.abtn.green{background:#1A5A2D;color:#fff;}
+.abtn.red{background:#e53935;color:#fff;}
+.abtn.white{background:#fff;color:#1a2e1a;border:1px solid #E0EDD8;}
+.abtn.lightgreen{background:#E8F5E0;color:#1A5A2D;border:1px solid #c8e6c9;}
+
+/* RIGHT PANEL */
+#right{display:flex;flex-direction:column;gap:12px;}
+#alertes{background:#fff;border:1px solid #E0EDD8;border-radius:10px;overflow:hidden;flex-shrink:0;}
+#alertes-head{padding:12px 16px;border-bottom:1px solid #E0EDD8;display:flex;justify-content:space-between;align-items:center;}
+.alerte-item{padding:10px 16px;border-bottom:1px solid #f5faf2;display:flex;gap:10px;align-items:flex-start;}
+.alerte-icon{font-size:.95rem;flex-shrink:0;}
+.alerte-titre{font-weight:700;font-size:.72rem;margin-bottom:1px;}
+.alerte-detail{font-size:.62rem;color:#8aaa8a;}
+.alerte-time{font-size:.58rem;color:#8aaa8a;flex-shrink:0;}
+#matching{background:#fff;border:1px solid #E0EDD8;border-radius:10px;overflow:hidden;flex:1;}
+#matching-head{padding:12px 16px;border-bottom:1px solid #E0EDD8;background:#E8F5E0;}
+.match-card{background:#F4F7F1;border:1px solid #E0EDD8;border-radius:8px;padding:12px;margin-bottom:10px;}
+.match-produit{font-weight:700;color:#1A5A2D;font-size:.72rem;margin-bottom:5px;display:flex;justify-content:space-between;}
+.match-parties{font-size:.65rem;color:#8aaa8a;margin-bottom:8px;}
+.match-parties span{color:#1a2e1a;font-weight:600;}
+.match-bar{width:100%;height:4px;background:#e0edd8;border-radius:3px;margin-bottom:10px;overflow:hidden;}
+.match-fill{height:100%;border-radius:3px;background:#1A5A2D;}
+.match-btn{width:100%;background:#1A5A2D;color:#fff;border:none;border-radius:6px;padding:8px;font-size:.67rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.04em;transition:filter .15s;}
+.match-btn:hover{filter:brightness(1.1);}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:#1A5A2D;color:#fff;padding:12px 22px;border-radius:10px;font-weight:700;font-size:.8rem;display:none;z-index:9999;box-shadow:0 8px 28px rgba(26,90,45,.35);animation:toast .3s ease;}
+#toast.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div id="logo">
+    <div class="name">Amb<span style="position:relative;display:inline-block;">é<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:12px;">🌿</span></span>ra</div>
+    <div class="tagline">la richesse de la nature dans chaque bouchée</div>
+    <div style="margin-top:10px;">
+      <span class="live-dot"></span>
+      <span class="live-lbl">Market · Administration</span>
+    </div>
+  </div>
+  <div id="nav">
+    <div class="ni active" onclick="setPage(this)"><span class="icon">⊞</span> Vue globale</div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">◈</span> Marché</div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">⟳</span> Transactions</div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">✦</span> Matching IA</div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">⚑</span> Alertes <span class="badge">2</span></div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">👨‍🌾</span> Producteurs</div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">🏭</span> Acheteurs</div>
+    <div class="ni" onclick="setPage(this)"><span class="icon">≡</span> Rapports</div>
+  </div>
+  <div id="user">
+    <div class="avatar">AD</div>
+    <div>
+      <div style="font-weight:700;font-size:.74rem;">Admin Central</div>
+      <div style="font-size:.6rem;color:#8aaa8a;">Yaoundé · En ligne</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="breadcrumb">Ambéra Market › <strong>Dashboard Administrateur</strong></div>
+    <div id="live-badge">
+      <span class="dot"></span>
+      <span>LIVE — </span>
+      <span id="vol-display">47.28 M XAF traités aujourd'hui</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div id="body">
+
+    <!-- KPIs -->
+    <div id="kpis">
+      <div class="kpi" style="animation-delay:.00s">
+        <div class="klabel">Transactions aujourd'hui</div>
+        <div class="kval" style="color:#1A5A2D;" id="kpi-tx">38</div>
+        <div class="ksub">+12 vs hier</div>
+      </div>
+      <div class="kpi" style="animation-delay:.07s">
+        <div class="klabel">Volume traité</div>
+        <div class="kval" style="color:#C8922A;"><span id="kpi-vol">47.28</span> M</div>
+        <div class="ksub">XAF · +34% vs hier</div>
+      </div>
+      <div class="kpi" style="animation-delay:.14s">
+        <div class="klabel">Tonnes matchées</div>
+        <div class="kval" style="color:#1565C0;"><span id="kpi-t">142</span> T</div>
+        <div class="ksub">8 régions actives</div>
+      </div>
+      <div class="kpi" style="animation-delay:.21s">
+        <div class="klabel">Score matching IA</div>
+        <div class="kval" style="color:#2E7D42;">93.4%</div>
+        <div class="ksub">Précision moyenne</div>
+      </div>
+    </div>
+
+    <!-- PRIX -->
+    <div id="prix-section">
+      <div class="sec-title">
+        📊 Cours du marché — XAF/Tonne
+        <span style="font-size:.62rem;color:#2E7D42;font-weight:400;display:flex;align-items:center;gap:5px;">
+          <span style="animation:blink 2s infinite;display:inline-block;">●</span> Temps réel
+        </span>
+      </div>
+      <div id="prix-grid">
+        <div class="prix-card"><div class="emoji">🍫</div><div class="pnom">Cacao</div><div class="pval">1 850 000</div><div class="pvar up">+2.3%</div></div>
+        <div class="prix-card"><div class="emoji">🌽</div><div class="pnom">Maïs</div><div class="pval">285 000</div><div class="pvar down">-0.8%</div></div>
+        <div class="prix-card"><div class="emoji">🌱</div><div class="pnom">Soja</div><div class="pval">420 000</div><div class="pvar up">+1.5%</div></div>
+        <div class="prix-card"><div class="emoji">☁️</div><div class="pnom">Coton</div><div class="pval">310 000</div><div class="pvar up">+0.4%</div></div>
+        <div class="prix-card"><div class="emoji">🍠</div><div class="pnom">Manioc</div><div class="pval">95 000</div><div class="pvar down">-1.2%</div></div>
+        <div class="prix-card"><div class="emoji">🍌</div><div class="pnom">Plantain</div><div class="pval">125 000</div><div class="pvar up">+3.1%</div></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM -->
+    <div id="bottom">
+
+      <!-- TRANSACTIONS -->
+      <div id="txns">
+        <div id="txns-head">🔄 Transactions récentes</div>
+        <div id="tabs">
+          <button class="tab-btn active" onclick="filterTab(this,'tous')">Tous</button>
+          <button class="tab-btn" onclick="filterTab(this,'matched')">Matchés IA</button>
+          <button class="tab-btn" onclick="filterTab(this,'negociation')">Négociation</button>
+          <button class="tab-btn" onclick="filterTab(this,'confirme')">Confirmés</button>
+          <button class="tab-btn" onclick="filterTab(this,'livraison')">Livraison</button>
+        </div>
+        <div id="txn-list"></div>
+        <div id="detail">
+          <div id="detail-head">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <span id="d-id" style="font-weight:800;color:#1A5A2D;font-size:.8rem;"></span>
+              <span id="d-statut" class="statut"></span>
+            </div>
+            <span onclick="closeDet()" style="cursor:pointer;color:#8aaa8a;font-size:1.1rem;">✕</span>
+          </div>
+          <div id="detail-grid">
+            <div class="detail-box"><div class="detail-lbl">Producteur</div><div class="detail-val" id="d-prod"></div></div>
+            <div class="detail-box"><div class="detail-lbl">Acheteur</div><div class="detail-val" id="d-achet"></div></div>
+            <div class="detail-box"><div class="detail-lbl">Produit · Quantité</div><div class="detail-val" id="d-prod2"></div></div>
+            <div class="detail-box"><div class="detail-lbl">Montant total</div><div class="detail-val" id="d-total"></div></div>
+          </div>
+          <div id="action-btns">
+            <button class="abtn green" onclick="act('✅ Transaction approuvée !')">✓ Approuver</button>
+            <button class="abtn red" onclick="act('⏸ Transaction suspendue')">⊘ Suspendre</button>
+            <button class="abtn white" onclick="act('📄 Rapport PDF généré')">↓ Rapport</button>
+            <button class="abtn lightgreen" onclick="act('✉️ Parties notifiées')">✉ Notifier</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div id="right">
+        <!-- Alertes -->
+        <div id="alertes">
+          <div id="alertes-head">
+            <span style="font-weight:700;font-size:.78rem;">⚑ Alertes</span>
+            <span style="background:#FFEBEE;color:#c62828;padding:3px 9px;border-radius:10px;font-size:.6rem;font-weight:700;">2 urgentes</span>
+          </div>
+          <div class="alerte-item"><span class="alerte-icon">🤖</span><div style="flex:1"><div class="alerte-titre">Match IA — Score 97%</div><div class="alerte-detail">Kofi Mensah ↔ Brasserie Cameroun</div></div><span class="alerte-time">4 min</span></div>
+          <div class="alerte-item"><span class="alerte-icon">⚠️</span><div style="flex:1"><div class="alerte-titre" style="color:#c62828;">Anomalie détectée</div><div class="alerte-detail">Prix suspect — TXN-4811</div></div><span class="alerte-time">18 min</span></div>
+          <div class="alerte-item"><span class="alerte-icon">📈</span><div style="flex:1"><div class="alerte-titre">Volume record</div><div class="alerte-detail">+34% vs hier — 142 T traitées</div></div><span class="alerte-time">1h</span></div>
+          <div class="alerte-item"><span class="alerte-icon">✅</span><div style="flex:1"><div class="alerte-titre">Paiement reçu</div><div class="alerte-detail">TXN-4818 — 9 250 000 XAF</div></div><span class="alerte-time">38 min</span></div>
+        </div>
+
+        <!-- Matching IA -->
+        <div id="matching">
+          <div id="matching-head">
+            <div style="font-size:.6rem;color:#1A5A2D;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;">Moteur IA</div>
+            <div style="font-weight:800;font-size:.82rem;color:#1A5A2D;">✦ Suggestions de matching</div>
+          </div>
+          <div style="padding:12px 14px;">
+            <div class="match-card">
+              <div class="match-produit">Arachide · 15T <span style="color:#2E7D32;">96%</span></div>
+              <div class="match-parties"><span>Moussa Ba</span> <span style="color:#4CAF65;margin:0 5px;">↔</span> <span>Huilerie du Nord</span></div>
+              <div class="match-bar"><div class="match-fill" style="width:96%"></div></div>
+              <button class="match-btn" onclick="act('🤝 Match confirmé — Moussa Ba ↔ Huilerie du Nord')">CONFIRMER CE MATCH</button>
+            </div>
+            <div class="match-card">
+              <div class="match-produit">Gombo · 4T <span style="color:#C8922A;">88%</span></div>
+              <div class="match-parties"><span>Fatou Koné</span> <span style="color:#4CAF65;margin:0 5px;">↔</span> <span>Marché Douala</span></div>
+              <div class="match-bar"><div class="match-fill" style="width:88%;background:#C8922A;"></div></div>
+              <button class="match-btn" onclick="act('🤝 Match confirmé — Fatou Koné ↔ Marché Douala')">CONFIRMER CE MATCH</button>
+            </div>
+            <div class="match-card">
+              <div class="match-produit">Igname · 20T <span style="color:#2E7D32;">91%</span></div>
+              <div class="match-parties"><span>J-P. Mvogo</span> <span style="color:#4CAF65;margin:0 5px;">↔</span> <span>Export Abidjan</span></div>
+              <div class="match-bar"><div class="match-fill" style="width:91%"></div></div>
+              <button class="match-btn" onclick="act('🤝 Match confirmé — J-P. Mvogo ↔ Export Abidjan')">CONFIRMER CE MATCH</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const TXNS = [
+  {id:"TXN-4821",prod:"Kofi Mensah",prod_loc:"Bafoussam",achet:"Brasserie Cameroun",achet_loc:"Douala",produit:"Maïs",qty:"12 T",total:"3 420 000 XAF",statut:"matched",score:97},
+  {id:"TXN-4820",prod:"Aminata Diallo",prod_loc:"Garoua",achet:"Nestlé Cameroun",achet_loc:"Yaoundé",produit:"Soja",qty:"8 T",total:"3 360 000 XAF",statut:"negociation",score:89},
+  {id:"TXN-4819",prod:"Ibrahim Maïkoul",prod_loc:"Maroua",achet:"SODECOTON",achet_loc:"N'Djaména",produit:"Coton",qty:"25 T",total:"7 750 000 XAF",statut:"confirme",score:94},
+  {id:"TXN-4818",prod:"Chantal Ngono",prod_loc:"Mbalmayo",achet:"Exportateur EU",achet_loc:"Paris",produit:"Cacao",qty:"5 T",total:"9 250 000 XAF",statut:"confirme",score:99},
+  {id:"TXN-4817",prod:"Moussa Alifa",prod_loc:"Moundou",achet:"Minoterie Tchad",achet_loc:"N'Djaména",produit:"Manioc",qty:"30 T",total:"2 850 000 XAF",statut:"livraison",score:91},
+  {id:"TXN-4816",prod:"Pauline Essono",prod_loc:"Ebolowa",achet:"Casino Group",achet_loc:"Abidjan",produit:"Plantain",qty:"18 T",total:"2 250 000 XAF",statut:"matched",score:88},
+];
+const STATUTS = {matched:{label:"✦ Matché IA",cls:"matched"},negociation:{label:"⟳ Négociation",cls:"negociation"},confirme:{label:"✓ Confirmé",cls:"confirme"},livraison:{label:"🚚 Livraison",cls:"livraison"}};
+let currentTab = "tous", selectedId = null;
+
+function renderTxns() {
+  const list = document.getElementById("txn-list");
+  const rows = TXNS.filter(t => currentTab === "tous" || t.statut === currentTab);
+  list.innerHTML = rows.map((t,i) => {
+    const s = STATUTS[t.statut];
+    const scoreColor = t.score>92?"#2E7D32":t.score>85?"#C8922A":"#e53935";
+    return `<div class="txn-row${selectedId===t.id?" sel":""}" onclick="selectTxn('${t.id}')" style="animation-delay:${i*.04}s">
+      <span class="txn-id">${t.id}</span>
+      <div><div class="txn-name">${t.prod}</div><div class="txn-loc">${t.prod_loc}</div></div>
+      <div><div class="txn-name">${t.achet}</div><div class="txn-loc">${t.achet_loc}</div></div>
+      <span style="font-size:.72rem">${t.produit}</span>
+      <span style="font-weight:700;font-size:.72rem">${t.qty}</span>
+      <span style="font-weight:700;font-size:.7rem;color:#1A5A2D;white-space:nowrap">${t.total}</span>
+      <span class="statut ${s.cls}">${s.label}</span>
+      <div class="score-wrap">
+        <div class="score-bar"><div class="score-fill" style="width:${t.score}%;background:${scoreColor}"></div></div>
+        <span class="score-txt" style="color:${scoreColor}">${t.score}%</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function selectTxn(id) {
+  if (selectedId === id) { selectedId = null; closeDet(); renderTxns(); return; }
+  selectedId = id;
+  renderTxns();
+  const t = TXNS.find(x => x.id === id);
+  const s = STATUTS[t.statut];
+  document.getElementById("d-id").textContent = t.id;
+  const ds = document.getElementById("d-statut");
+  ds.textContent = s.label; ds.className = "statut " + s.cls;
+  document.getElementById("d-prod").textContent = t.prod + " — " + t.prod_loc;
+  document.getElementById("d-achet").textContent = t.achet + " — " + t.achet_loc;
+  document.getElementById("d-prod2").textContent = t.produit + " · " + t.qty;
+  document.getElementById("d-total").textContent = t.total;
+  document.getElementById("detail").classList.add("show");
+}
+
+function closeDet() { selectedId = null; document.getElementById("detail").classList.remove("show"); renderTxns(); }
+
+function filterTab(btn, tab) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentTab = tab;
+  renderTxns();
+}
+
+function setPage(el) { document.querySelectorAll(".ni").forEach(n => n.classList.remove("active")); el.classList.add("active"); }
+
+function act(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// Live updates
+let vol = 47.28, tx = 38, tonnes = 142;
+setInterval(() => {
+  vol = +(vol + 0.01 + Math.random()*0.06).toFixed(2);
+  if (Math.random() > .72) tx++;
+  if (Math.random() > .8) tonnes++;
+  document.getElementById("vol-display").textContent = vol + " M XAF traités aujourd'hui";
+  document.getElementById("kpi-vol").textContent = vol;
+  document.getElementById("kpi-tx").textContent = tx;
+  document.getElementById("kpi-t").textContent = tonnes;
+}, 2500);
+
+renderTxns();
+</script>
+</body>
+</html>

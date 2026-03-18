@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambéra Intelligence — IA Agricole</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#0D1117;color:#e0e6f0;min-height:100vh;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#2a3a5a;border-radius:4px;}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.8);opacity:.2}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(99,179,237,.3)}50%{box-shadow:0 0 24px rgba(99,179,237,.7)}}
+@keyframes scan{0%{top:-5%}100%{top:105%}}
+@keyframes typeit{from{width:0}to{width:100%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* TOPBAR */
+#topbar{background:linear-gradient(135deg,#0D1117,#1a2340);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid #1e2d4a;}
+.logo{font-size:1.4rem;font-weight:900;background:linear-gradient(90deg,#63B3ED,#9F7AEA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:.6rem;color:#4a6a8a;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+.ai-badge{display:flex;align-items:center;gap:6px;background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.25);padding:5px 12px;border-radius:20px;animation:glow 3s infinite;}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:#63B3ED;animation:pulse 2s infinite;}
+.ai-txt{color:#63B3ED;font-size:.68rem;font-weight:700;}
+
+/* NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0D1117;border-top:1px solid #1e2d4a;display:flex;z-index:100;}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;gap:3px;}
+.bnav.active .blabel{color:#63B3ED;}
+.bicon{font-size:1.1rem;}
+.blabel{font-size:.56rem;font-weight:600;color:#4a6a8a;letter-spacing:.02em;}
+
+/* MAIN */
+#main{padding:14px 14px 88px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* HERO */
+.ai-hero{background:linear-gradient(135deg,#0D1117,#1a2340);border:1px solid #1e2d4a;border-radius:16px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;}
+.ai-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(99,179,237,.12),transparent 70%);}
+.ai-hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(159,122,234,.1),transparent 70%);}
+
+/* CARDS */
+.card{background:#111827;border:1px solid #1e2d4a;border-radius:12px;padding:16px;margin-bottom:12px;animation:pop .4s ease both;}
+.card-title{font-weight:800;font-size:.88rem;color:#e0e6f0;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between;}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:#111827;border:1px solid #1e2d4a;border-radius:12px;padding:14px;text-align:center;}
+.kval{font-size:1.7rem;font-weight:900;line-height:1;margin-bottom:4px;}
+.klbl{font-size:.58rem;color:#4a6a8a;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.ksub{font-size:.62rem;margin-top:3px;font-weight:600;}
+
+/* DIAGNOSTIC PHOTO */
+.photo-zone{border:2px dashed #1e2d4a;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;background:#0D1117;}
+.photo-zone:hover{border-color:#63B3ED;background:rgba(99,179,237,.04);}
+.photo-zone.analyzing{border-color:#63B3ED;animation:glow 1.5s infinite;}
+.scan-line{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#63B3ED,transparent);animation:scan 1.5s linear infinite;display:none;}
+.photo-zone.analyzing .scan-line{display:block;}
+.pz-icon{font-size:2.5rem;margin-bottom:10px;}
+.pz-title{font-weight:800;font-size:.88rem;color:#e0e6f0;margin-bottom:6px;}
+.pz-sub{font-size:.7rem;color:#4a6a8a;line-height:1.5;}
+
+/* RÉSULTAT DIAGNOSTIC */
+.diag-result{background:linear-gradient(135deg,#0f1f35,#1a2340);border:1px solid #2a4a6a;border-radius:12px;padding:16px;margin-bottom:12px;display:none;}
+.diag-result.show{display:block;animation:fadeup .5s ease;}
+.diag-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.diag-titre{font-weight:800;font-size:.9rem;color:#63B3ED;}
+.diag-score{font-size:1.8rem;font-weight:900;color:#63B3ED;}
+.diag-score-label{font-size:.6rem;color:#4a6a8a;}
+.diag-detail{font-size:.75rem;line-height:1.7;color:#a0b4c8;margin-bottom:12px;}
+.diag-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.diag-tag{padding:4px 10px;border-radius:20px;font-size:.62rem;font-weight:700;}
+.tag-ok{background:rgba(72,187,120,.15);color:#48BB78;border:1px solid rgba(72,187,120,.2);}
+.tag-warn{background:rgba(237,137,54,.15);color:#ED8936;border:1px solid rgba(237,137,54,.2);}
+.tag-bad{background:rgba(245,101,101,.15);color:#F56565;border:1px solid rgba(245,101,101,.2);}
+.diag-conseil{background:rgba(99,179,237,.08);border:1px solid rgba(99,179,237,.2);border-radius:10px;padding:12px;font-size:.72rem;color:#a0c8e8;line-height:1.6;}
+
+/* PRÉDICTION PRIX */
+.prix-card{background:#0f1f35;border:1px solid #1e3a5a;border-radius:11px;padding:14px;margin-bottom:10px;}
+.prix-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prix-produit{font-weight:800;font-size:.85rem;color:#e0e6f0;}
+.prix-tendance{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:20px;}
+.trend-up{background:rgba(72,187,120,.15);color:#48BB78;}
+.trend-down{background:rgba(245,101,101,.15);color:#F56565;}
+.trend-stable{background:rgba(99,179,237,.15);color:#63B3ED;}
+.prix-actuel{font-size:1.4rem;font-weight:900;color:#63B3ED;margin-bottom:4px;}
+.prix-prediction{font-size:.72rem;color:#4a6a8a;margin-bottom:10px;}
+/* Mini graphe */
+.mini-graph{height:48px;display:flex;align-items:flex-end;gap:3px;margin-bottom:8px;}
+.bar-g{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height .5s ease;}
+.bar-g.past{background:#1e3a5a;}
+.bar-g.current{background:#63B3ED;}
+.bar-g.future{background:rgba(159,122,234,.5);border:1px dashed rgba(159,122,234,.5);}
+.bar-g.future.up{background:rgba(72,187,120,.3);border:1px dashed rgba(72,187,120,.5);}
+
+/* ALERTES IA */
+.alerte-ia{padding:12px 14px;border-radius:10px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start;}
+.ai-urgent{background:rgba(245,101,101,.08);border:1px solid rgba(245,101,101,.2);}
+.ai-info{background:rgba(99,179,237,.08);border:1px solid rgba(99,179,237,.2);}
+.ai-success{background:rgba(72,187,120,.08);border:1px solid rgba(72,187,120,.2);}
+.ai-warn{background:rgba(237,137,54,.08);border:1px solid rgba(237,137,54,.2);}
+.alerte-ia-icon{font-size:1.1rem;flex-shrink:0;}
+.alerte-ia-txt .ai-titre{font-weight:700;font-size:.74rem;color:#e0e6f0;}
+.alerte-ia-txt .ai-detail{font-size:.64rem;color:#6a8aaa;margin-top:3px;line-height:1.5;}
+
+/* CHAT IA */
+.chat-container{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.chat-msg{max-width:88%;animation:fadeup .3s ease;}
+.chat-msg.ai{align-self:flex-start;}
+.chat-msg.user{align-self:flex-end;}
+.chat-bubble-ai{background:#0f1f35;border:1px solid #1e3a5a;border-radius:12px 12px 12px 3px;padding:12px 14px;font-size:.74rem;line-height:1.65;color:#c0d4e8;}
+.chat-bubble-user{background:linear-gradient(135deg,#1e3a6a,#2a4a8a);border-radius:12px 12px 3px 12px;padding:12px 14px;font-size:.74rem;line-height:1.65;color:#e0e6f0;}
+.chat-label{font-size:.58rem;color:#4a6a8a;margin-bottom:4px;font-weight:600;}
+.chat-input-wrap{display:flex;gap:8px;align-items:center;}
+.chat-input{flex:1;background:#0f1f35;border:1px solid #1e3a5a;border-radius:10px;padding:11px 14px;font-size:.8rem;color:#e0e6f0;font-family:'DM Sans',sans-serif;outline:none;}
+.chat-input:focus{border-color:#63B3ED;}
+.chat-send{background:linear-gradient(135deg,#1e3a6a,#2a4a8a);border:none;border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;flex-shrink:0;}
+
+/* FORM */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.7rem;font-weight:700;color:#a0b4c8;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.05em;}
+.form-input{width:100%;background:#0f1f35;border:1px solid #1e3a5a;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#e0e6f0;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:#63B3ED;}
+.form-select{width:100%;background:#0f1f35;border:1px solid #1e3a5a;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#e0e6f0;font-family:'DM Sans',sans-serif;outline:none;appearance:none;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* BTNS */
+.btn{border:none;border-radius:8px;padding:10px 16px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s,transform .1s;}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn.blue{background:linear-gradient(135deg,#1e3a6a,#2a4a8a);color:#e0e6f0;}
+.btn.cyan{background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff;}
+.btn.purple{background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;}
+.btn.green{background:linear-gradient(135deg,#065f46,#047857);color:#fff;}
+.btn.grey{background:#1a2340;color:#6a8aaa;border:1px solid #1e2d4a;}
+
+/* BADGE */
+.badge{padding:3px 10px;border-radius:20px;font-size:.6rem;font-weight:700;display:inline-block;}
+.b-ia{background:rgba(99,179,237,.15);color:#63B3ED;border:1px solid rgba(99,179,237,.2);}
+.b-ok{background:rgba(72,187,120,.15);color:#48BB78;}
+.b-warn{background:rgba(237,137,54,.15);color:#ED8936;}
+.b-critical{background:rgba(245,101,101,.15);color:#F56565;}
+
+/* SEC HEADER */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:1rem;font-weight:800;color:#e0e6f0;}
+.sec-sub{font-size:.67rem;color:#4a6a8a;margin-top:2px;}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#loading.show{display:flex;}
+.loading-box{background:#111827;border:1px solid #1e3a5a;border-radius:16px;padding:28px 36px;text-align:center;}
+.spinner{width:44px;height:44px;border:3px solid #1e3a5a;border-top:3px solid #63B3ED;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;}
+.loading-txt{font-weight:700;font-size:.88rem;color:#e0e6f0;}
+.loading-steps{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.lstep{font-size:.65rem;color:#4a6a8a;display:flex;align-items:center;gap:8px;}
+.lstep.done{color:#48BB78;}
+.lstep .licon{font-size:.75rem;}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1e3a6a,#2a4a8a);color:#e0e6f0;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.76rem;display:none;z-index:9999;box-shadow:0 8px 24px rgba(99,179,237,.3);animation:toast .3s ease;white-space:nowrap;}
+#toast.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div>
+    <div class="logo">🧠 Ambéra Intelligence</div>
+    <div class="logo-sub">IA Agricole · Modèle v3.2</div>
+  </div>
+  <div class="ai-badge">
+    <span class="ai-dot"></span>
+    <span class="ai-txt">IA ACTIVE</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ══ PAGE ACCUEIL ══ -->
+  <div class="page active" id="page-accueil">
+
+    <!-- Hero -->
+    <div class="ai-hero" style="animation:pop .4s ease both;">
+      <div style="font-size:.62rem;color:#4a6a8a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">🧠 Intelligence artificielle agricole</div>
+      <div style="font-size:1.1rem;font-weight:900;color:#e0e6f0;margin-bottom:6px;line-height:1.4;">Diagnostic · Prédictions · Conseils personnalisés</div>
+      <div style="font-size:.74rem;color:#6a8aaa;line-height:1.6;margin-bottom:16px;">L'IA Ambéra analyse vos cultures, prédit les prix du marché et vous guide pour maximiser vos revenus agricoles.</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn cyan" style="flex:1;" onclick="goPage('diagnostic')">📷 Diagnostiquer ma culture</button>
+        <button class="btn purple" onclick="goPage('prediction')">📈 Prix futurs</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi" style="animation:pop .3s ease .05s both;">
+        <div class="kval" style="color:#63B3ED;">94%</div>
+        <div class="klbl">Précision IA</div>
+        <div class="ksub" style="color:#63B3ED;">Diagnostics</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .1s both;">
+        <div class="kval" style="color:#48BB78;">+27%</div>
+        <div class="klbl">Rendement moyen</div>
+        <div class="ksub" style="color:#48BB78;">Utilisateurs IA</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .15s both;">
+        <div class="kval" style="color:#9F7AEA;">2-4</div>
+        <div class="klbl">Semaines prédites</div>
+        <div class="ksub" style="color:#9F7AEA;">Horizon prix</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .2s both;">
+        <div class="kval" style="color:#ED8936;">1 247</div>
+        <div class="klbl">Diagnostics ce mois</div>
+        <div class="ksub" style="color:#ED8936;">+34% vs mois passé</div>
+      </div>
+    </div>
+
+    <!-- Alertes IA -->
+    <div class="card" style="animation:pop .4s ease .25s both;">
+      <div class="card-title">⚡ Alertes IA du jour <span class="badge b-ia">4 nouvelles</span></div>
+
+      <div class="alerte-ia ai-urgent">
+        <span class="alerte-ia-icon">🚨</span>
+        <div class="alerte-ia-txt">
+          <div class="ai-titre">Risque mildiou détecté — Région Ouest</div>
+          <div class="ai-detail">Humidité 87% + température 24°C = conditions idéales. Traitement préventif recommandé dans les 48h pour les cultures de maïs.</div>
+        </div>
+      </div>
+      <div class="alerte-ia ai-success">
+        <span class="alerte-ia-icon">📈</span>
+        <div class="alerte-ia-txt">
+          <div class="ai-titre">Bon moment pour vendre votre Maïs</div>
+          <div class="ai-detail">Prix prédit à +4.2% dans 10 jours. Attendre encore 1 semaine avant de vendre maximise vos revenus de ~85 000 XAF.</div>
+        </div>
+      </div>
+      <div class="alerte-ia ai-warn">
+        <span class="alerte-ia-icon">☀️</span>
+        <div class="alerte-ia-txt">
+          <div class="ai-titre">Sécheresse prévue — Nord Cameroun</div>
+          <div class="ai-detail">Période sèche de 3 semaines prévue. Activer l'irrigation dès maintenant pour protéger les cultures de sorgho.</div>
+        </div>
+      </div>
+      <div class="alerte-ia ai-info">
+        <span class="alerte-ia-icon">💰</span>
+        <div class="alerte-ia-txt">
+          <div class="ai-titre">Opportunité Cacao — Prix record</div>
+          <div class="ai-detail">Le prix du cacao atteint son plus haut niveau en 6 mois. Les producteurs de la région Centre peuvent vendre maintenant.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conseil personnalisé -->
+    <div class="card" style="animation:pop .4s ease .3s both;border:1px solid rgba(99,179,237,.2);background:linear-gradient(135deg,#0a1628,#111827);">
+      <div class="card-title">🧠 Conseil IA pour Kofi Mensah</div>
+      <div style="font-size:.76rem;color:#a0c0d8;line-height:1.7;">
+        Basé sur votre historique et les données météo actuelles, l'IA recommande de <strong style="color:#63B3ED;">semer du soja</strong> dans votre parcelle nord après la récolte de maïs. Le soja enrichira le sol en azote et se vendra <strong style="color:#48BB78;">420 000 XAF/T</strong> en novembre selon les prédictions.
+      </div>
+      <button class="btn cyan" style="width:100%;margin-top:12px;" onclick="goPage('chat')">💬 Demander à l'IA</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE DIAGNOSTIC ══ -->
+  <div class="page" id="page-diagnostic">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📷 Diagnostic culture</div>
+        <div class="sec-sub">Prenez une photo — l'IA analyse en 10 secondes</div>
+      </div>
+    </div>
+
+    <!-- Zone photo -->
+    <div class="photo-zone" id="photo-zone" onclick="lancerDiagnostic()">
+      <div class="scan-line" id="scan-line"></div>
+      <div class="pz-icon" id="pz-icon">📸</div>
+      <div class="pz-title" id="pz-title">Photographier ma culture</div>
+      <div class="pz-sub" id="pz-sub">Feuilles · Tiges · Racines · Sol<br>L'IA détecte maladies, carences, parasites</div>
+    </div>
+
+    <!-- Résultat diagnostic -->
+    <div class="diag-result" id="diag-result">
+      <div class="diag-header">
+        <div>
+          <div style="font-size:.62rem;color:#4a6a8a;margin-bottom:4px;">CULTURE ANALYSÉE</div>
+          <div class="diag-titre">🌽 Maïs — Stade floraison</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="diag-score">87/100</div>
+          <div class="diag-score-label">Santé globale</div>
+        </div>
+      </div>
+
+      <div class="diag-detail">
+        L'IA a analysé <strong style="color:#63B3ED;">247 points</strong> sur votre photo. La culture est globalement en bonne santé. Une <strong style="color:#ED8936;">légère carence en zinc</strong> est détectée sur les feuilles du milieu (jaunissement caractéristique). Le sol semble bien irrigué. Aucun parasite visible.
+      </div>
+
+      <div class="diag-tags">
+        <span class="diag-tag tag-ok">✓ Hydratation bonne</span>
+        <span class="diag-tag tag-ok">✓ Pas de parasite</span>
+        <span class="diag-tag tag-ok">✓ Croissance normale</span>
+        <span class="diag-tag tag-warn">⚠ Carence zinc</span>
+        <span class="diag-tag tag-warn">⚠ Humidité élevée</span>
+        <span class="diag-tag tag-ok">✓ Sol bien structuré</span>
+      </div>
+
+      <div class="diag-conseil">
+        <strong style="color:#63B3ED;">🤖 Recommandation IA :</strong><br>
+        Appliquer un engrais foliaire contenant du <strong>sulfate de zinc (ZnSO₄)</strong> à 0.3% dans les 5 prochains jours. Coût estimé : <strong>8 500 XAF</strong>. Gain de rendement attendu : <strong>+12%</strong> soit environ <strong>+192 000 XAF</strong> à la vente.
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn cyan" style="flex:1;" onclick="showToast('📋 Rapport envoyé par SMS')">📋 Rapport complet</button>
+        <button class="btn green" onclick="showToast('🛒 Produit ajouté au panier Ambéra Market')">🛒 Commander traitement</button>
+      </div>
+    </div>
+
+    <!-- Historique diagnostics -->
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title">📜 Historique diagnostics</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <div>
+            <div style="font-weight:700;font-size:.78rem;color:#e0e6f0;">🌽 Maïs — Parcelle Nord</div>
+            <div style="font-size:.62rem;color:#4a6a8a;margin-top:2px;">il y a 3 jours · Santé 87/100</div>
+          </div>
+          <span class="badge b-ok">Bon état</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <div>
+            <div style="font-weight:700;font-size:.78rem;color:#e0e6f0;">🌱 Soja — Parcelle Sud</div>
+            <div style="font-size:.62rem;color:#4a6a8a;margin-top:2px;">il y a 1 semaine · Santé 72/100</div>
+          </div>
+          <span class="badge b-warn">Attention</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <div>
+            <div style="font-weight:700;font-size:.78rem;color:#e0e6f0;">🍌 Plantain — Parcelle Est</div>
+            <div style="font-size:.62rem;color:#4a6a8a;margin-top:2px;">il y a 2 semaines · Santé 91/100</div>
+          </div>
+          <span class="badge b-ok">Excellent</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE PRÉDICTIONS PRIX ══ -->
+  <div class="page" id="page-prediction">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📈 Prédictions de prix</div>
+        <div class="sec-sub">Horizon 2 à 4 semaines · Modèle IA v3.2</div>
+      </div>
+      <span class="badge b-ia">Live</span>
+    </div>
+
+    <!-- Maïs -->
+    <div class="prix-card" style="animation:pop .3s ease both;">
+      <div class="prix-header">
+        <div class="prix-produit">🌽 Maïs</div>
+        <span class="prix-tendance trend-up">↑ +4.2% prédit</span>
+      </div>
+      <div class="prix-actuel">285 000 XAF/T</div>
+      <div class="prix-prediction">📅 Dans 2 semaines : <strong style="color:#48BB78;">297 000 XAF/T</strong> · Dans 4 semaines : <strong style="color:#48BB78;">302 000 XAF/T</strong></div>
+      <div class="mini-graph">
+        <div class="bar-g past" style="height:55%;"></div>
+        <div class="bar-g past" style="height:58%;"></div>
+        <div class="bar-g past" style="height:62%;"></div>
+        <div class="bar-g past" style="height:60%;"></div>
+        <div class="bar-g current" style="height:65%;"></div>
+        <div class="bar-g future up" style="height:68%;"></div>
+        <div class="bar-g future up" style="height:72%;"></div>
+        <div class="bar-g future up" style="height:75%;"></div>
+      </div>
+      <div style="display:flex;gap:6px;font-size:.6rem;color:#4a6a8a;margin-bottom:10px;">
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#1e3a5a;border-radius:2px;display:inline-block;"></span>Passé</span>
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:#63B3ED;border-radius:2px;display:inline-block;"></span>Aujourd'hui</span>
+        <span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;background:rgba(72,187,120,.4);border-radius:2px;display:inline-block;"></span>Prédit</span>
+      </div>
+      <div style="background:rgba(72,187,120,.08);border:1px solid rgba(72,187,120,.2);border-radius:8px;padding:9px 12px;font-size:.7rem;color:#48BB78;">
+        💡 Conseil : Attendre 10 jours avant de vendre. Gain potentiel : <strong>+85 000 XAF</strong> pour 10 tonnes.
+      </div>
+    </div>
+
+    <!-- Cacao -->
+    <div class="prix-card" style="animation:pop .3s ease .08s both;">
+      <div class="prix-header">
+        <div class="prix-produit">🍫 Cacao</div>
+        <span class="prix-tendance trend-up">↑ +6.1% prédit</span>
+      </div>
+      <div class="prix-actuel">1 850 000 XAF/T</div>
+      <div class="prix-prediction">📅 Dans 2 semaines : <strong style="color:#48BB78;">1 963 000 XAF/T</strong></div>
+      <div class="mini-graph">
+        <div class="bar-g past" style="height:45%;"></div>
+        <div class="bar-g past" style="height:52%;"></div>
+        <div class="bar-g past" style="height:58%;"></div>
+        <div class="bar-g past" style="height:62%;"></div>
+        <div class="bar-g current" style="height:68%;"></div>
+        <div class="bar-g future up" style="height:74%;"></div>
+        <div class="bar-g future up" style="height:80%;"></div>
+        <div class="bar-g future up" style="height:85%;"></div>
+      </div>
+      <div style="background:rgba(72,187,120,.08);border:1px solid rgba(72,187,120,.2);border-radius:8px;padding:9px 12px;font-size:.7rem;color:#48BB78;">
+        🚀 Tendance haussière forte. Prix mondial en hausse. Vendre dans 2 semaines.
+      </div>
+    </div>
+
+    <!-- Soja -->
+    <div class="prix-card" style="animation:pop .3s ease .16s both;">
+      <div class="prix-header">
+        <div class="prix-produit">🌱 Soja</div>
+        <span class="prix-tendance trend-down">↓ -1.8% prédit</span>
+      </div>
+      <div class="prix-actuel">420 000 XAF/T</div>
+      <div class="prix-prediction">📅 Dans 2 semaines : <strong style="color:#F56565;">412 000 XAF/T</strong></div>
+      <div class="mini-graph">
+        <div class="bar-g past" style="height:78%;"></div>
+        <div class="bar-g past" style="height:75%;"></div>
+        <div class="bar-g past" style="height:72%;"></div>
+        <div class="bar-g past" style="height:70%;"></div>
+        <div class="bar-g current" style="height:68%;"></div>
+        <div class="bar-g future" style="height:65%;background:rgba(245,101,101,.3);border:1px dashed rgba(245,101,101,.4);"></div>
+        <div class="bar-g future" style="height:62%;background:rgba(245,101,101,.3);border:1px dashed rgba(245,101,101,.4);"></div>
+        <div class="bar-g future" style="height:60%;background:rgba(245,101,101,.3);border:1px dashed rgba(245,101,101,.4);"></div>
+      </div>
+      <div style="background:rgba(245,101,101,.08);border:1px solid rgba(245,101,101,.2);border-radius:8px;padding:9px 12px;font-size:.7rem;color:#F56565;">
+        ⚠️ Légère baisse prévue. Vendre maintenant si stock disponible.
+      </div>
+    </div>
+
+    <!-- Plantain -->
+    <div class="prix-card" style="animation:pop .3s ease .24s both;">
+      <div class="prix-header">
+        <div class="prix-produit">🍌 Plantain</div>
+        <span class="prix-tendance trend-stable">→ Stable</span>
+      </div>
+      <div class="prix-actuel">125 000 XAF/T</div>
+      <div class="prix-prediction">📅 Dans 2-4 semaines : <strong style="color:#63B3ED;">124 000 – 128 000 XAF/T</strong></div>
+      <div class="mini-graph">
+        <div class="bar-g past" style="height:60%;"></div>
+        <div class="bar-g past" style="height:62%;"></div>
+        <div class="bar-g past" style="height:61%;"></div>
+        <div class="bar-g past" style="height:63%;"></div>
+        <div class="bar-g current" style="height:62%;"></div>
+        <div class="bar-g future" style="height:61%;"></div>
+        <div class="bar-g future" style="height:63%;"></div>
+        <div class="bar-g future" style="height:62%;"></div>
+      </div>
+      <div style="background:rgba(99,179,237,.08);border:1px solid rgba(99,179,237,.2);border-radius:8px;padding:9px 12px;font-size:.7rem;color:#63B3ED;">
+        📊 Marché stable. Vendre selon vos besoins de trésorerie.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE CHAT IA ══ -->
+  <div class="page" id="page-chat">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">💬 Conseiller IA</div>
+        <div class="sec-sub">Posez n'importe quelle question agricole</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:#48BB78;display:inline-block;animation:pulse 2s infinite;"></span>
+        <span style="font-size:.62rem;color:#48BB78;font-weight:700;">En ligne</span>
+      </div>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+      <div class="chat-msg ai">
+        <div class="chat-label">🧠 Ambéra IA</div>
+        <div class="chat-bubble-ai">
+          Bonjour Kofi ! Je suis votre conseiller agricole IA. Je connais vos 4.5 ha, vos cultures de maïs, soja et plantain, et l'historique de vos ventes sur Ambéra.<br><br>
+          Comment puis-je vous aider aujourd'hui ? Vous pouvez me demander : diagnostic de culture, conseil sur les prix, quand vendre, quoi planter, comment gérer une maladie...
+        </div>
+      </div>
+
+      <div class="chat-msg user">
+        <div class="chat-label" style="text-align:right;">👨‍🌾 Kofi Mensah</div>
+        <div class="chat-bubble-user">Quel est le meilleur moment pour vendre mon maïs ce mois-ci ?</div>
+      </div>
+
+      <div class="chat-msg ai">
+        <div class="chat-label">🧠 Ambéra IA</div>
+        <div class="chat-bubble-ai">
+          Excellente question ! Selon mes données de marché :<br><br>
+          📈 <strong style="color:#48BB78;">Attendre 10 jours</strong> est optimal.<br>
+          Le prix actuel est 285 000 XAF/T. Ma prédiction indique <strong style="color:#48BB78;">297 000 XAF/T</strong> dans 10 jours (+4.2%).<br><br>
+          Pour vos 12 tonnes : vous gagnerez <strong style="color:#48BB78;">+144 000 XAF</strong> en attendant.<br><br>
+          ⚠️ Attention : ne pas dépasser 3 semaines. Le prix devrait baisser après la grande récolte du Nord.
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggestions rapides -->
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;">
+      <button class="btn grey" style="font-size:.65rem;padding:7px 12px;border-radius:20px;" onclick="sendMsg('Quelles maladies risquent mes cultures ?')">🦠 Maladies risquées</button>
+      <button class="btn grey" style="font-size:.65rem;padding:7px 12px;border-radius:20px;" onclick="sendMsg('Que planter après le maïs ?')">🌱 Quoi planter après ?</button>
+      <button class="btn grey" style="font-size:.65rem;padding:7px 12px;border-radius:20px;" onclick="sendMsg('Prévisions météo ma région')">🌦️ Météo & récolte</button>
+      <button class="btn grey" style="font-size:.65rem;padding:7px 12px;border-radius:20px;" onclick="sendMsg('Comment augmenter mon rendement ?')">📈 Améliorer rendement</button>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-wrap">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Posez votre question agricole..." onkeypress="if(event.key==='Enter')envoyerMsg()">
+      <button class="chat-send" onclick="envoyerMsg()">➤</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE ANTI-FRAUDE ══ -->
+  <div class="page" id="page-fraude">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🛡️ Détection fraudes</div>
+        <div class="sec-sub">IA surveillance · Transactions sécurisées</div>
+      </div>
+      <span class="badge b-ok">Système actif</span>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#0a1628,#111827);border:1px solid rgba(72,187,120,.2);border-radius:12px;padding:18px;text-align:center;margin-bottom:14px;animation:pop .4s ease both;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🛡️</div>
+      <div style="font-size:1.4rem;font-weight:900;color:#48BB78;margin-bottom:4px;">247 transactions</div>
+      <div style="font-size:.72rem;color:#4a6a8a;">analysées aujourd'hui sans fraude détectée</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;">
+        <div style="background:rgba(72,187,120,.08);border:1px solid rgba(72,187,120,.15);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-weight:900;color:#48BB78;">99.2%</div>
+          <div style="font-size:.58rem;color:#4a6a8a;margin-top:2px;">Transactions sûres</div>
+        </div>
+        <div style="background:rgba(237,137,54,.08);border:1px solid rgba(237,137,54,.15);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-weight:900;color:#ED8936;">2</div>
+          <div style="font-size:.58rem;color:#4a6a8a;margin-top:2px;">Alertes ce mois</div>
+        </div>
+        <div style="background:rgba(245,101,101,.08);border:1px solid rgba(245,101,101,.15);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-weight:900;color:#F56565;">0</div>
+          <div style="font-size:.58rem;color:#4a6a8a;margin-top:2px;">Fraudes confirmées</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="animation:pop .4s ease .1s both;">
+      <div class="card-title">🔍 Ce que surveille l'IA</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <span style="font-size:1rem;">⚖️</span>
+          <div>
+            <div style="font-weight:700;font-size:.75rem;color:#e0e6f0;">Faux poids déclarés</div>
+            <div style="font-size:.62rem;color:#4a6a8a;">Comparaison poids déclaré vs estimé par photo IA</div>
+          </div>
+          <span class="badge b-ok" style="margin-left:auto;">Actif</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <span style="font-size:1rem;">👤</span>
+          <div>
+            <div style="font-weight:700;font-size:.75rem;color:#e0e6f0;">Faux comptes vendeurs</div>
+            <div style="font-size:.62rem;color:#4a6a8a;">Vérification identité + cohérence comportement</div>
+          </div>
+          <span class="badge b-ok" style="margin-left:auto;">Actif</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <span style="font-size:1rem;">💰</span>
+          <div>
+            <div style="font-weight:700;font-size:.75rem;color:#e0e6f0;">Manipulation de prix</div>
+            <div style="font-size:.62rem;color:#4a6a8a;">Détection ententes illicites et prix anormaux</div>
+          </div>
+          <span class="badge b-ok" style="margin-left:auto;">Actif</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0f1f35;border-radius:8px;">
+          <span style="font-size:1rem;">🖼️</span>
+          <div>
+            <div style="font-weight:700;font-size:.75rem;color:#e0e6f0;">Photos réutilisées</div>
+            <div style="font-size:.62rem;color:#4a6a8a;">IA détecte les photos copiées ou retouchées</div>
+          </div>
+          <span class="badge b-ok" style="margin-left:auto;">Actif</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV BAS -->
+<div id="bottom-nav">
+  <div class="bnav active" id="nav-accueil" onclick="goPage('accueil')">
+    <span class="bicon">🏠</span>
+    <span class="blabel">Accueil</span>
+  </div>
+  <div class="bnav" id="nav-diagnostic" onclick="goPage('diagnostic')">
+    <span class="bicon">📷</span>
+    <span class="blabel">Diagnostic</span>
+  </div>
+  <div class="bnav" id="nav-prediction" onclick="goPage('prediction')">
+    <span style="font-size:1.5rem;background:linear-gradient(135deg,#1e3a6a,#2a4a8a);color:#e0e6f0;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-14px;box-shadow:0 4px 14px rgba(99,179,237,.35);">📈</span>
+    <span class="blabel">Prix IA</span>
+  </div>
+  <div class="bnav" id="nav-chat" onclick="goPage('chat')">
+    <span class="bicon">💬</span>
+    <span class="blabel">Conseiller</span>
+  </div>
+  <div class="bnav" id="nav-fraude" onclick="goPage('fraude')">
+    <span class="bicon">🛡️</span>
+    <span class="blabel">Anti-fraude</span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div class="loading-txt">🧠 Analyse IA en cours...</div>
+    <div class="loading-steps" id="loading-steps">
+      <div class="lstep" id="step1"><span class="licon">⏳</span> Détection des zones foliaires</div>
+      <div class="lstep" id="step2"><span class="licon">⏳</span> Analyse des couleurs et textures</div>
+      <div class="lstep" id="step3"><span class="licon">⏳</span> Comparaison base de données</div>
+      <div class="lstep" id="step4"><span class="licon">⏳</span> Génération du rapport</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const reponses = {
+  'Quelles maladies risquent mes cultures ?': "Basé sur votre position (Bafoussam) et la météo actuelle (humidité 87%) :\n\n🦠 Risque élevé : Mildiou du maïs (traitement préventif dans 48h)\n🐛 Risque moyen : Foreurs de tiges (surveiller les jeunes plants)\n🍂 Faible risque : Rouille foliaire\n\nJe vous recommande une inspection visuelle demain matin.",
+  'Que planter après le maïs ?': "Excellente question sur la rotation des cultures !\n\n1️⃣ Soja (idéal) — enrichit le sol en azote, prix actuellement bon à 420 000 XAF/T\n2️⃣ Arachide — facile, marché local stable\n3️⃣ Légumes feuilles — cycle court, cash rapide\n\nJe recommande le Soja pour votre parcelle Nord. Retour sur investissement estimé : +35%.",
+  'Prévisions météo ma région': "📍 Bafoussam · Prochaines 3 semaines :\n\n✅ Semaine 1 : Pluies modérées, 22-26°C — Bonnes conditions\n⚠️ Semaine 2 : Risque pluies intenses vendredi-samedi\n☀️ Semaine 3 : Temps sec, températures 28-32°C\n\nConseil : Récolter votre maïs avant la semaine 2 si maturité atteinte.",
+  'Comment augmenter mon rendement ?': "Pour vos 4.5 ha, 3 actions clés :\n\n1️⃣ Engrais zinc (carence détectée) → +12% rendement · 8 500 XAF\n2️⃣ Écartement optimal 75x25cm → évite la compétition entre plants\n3️⃣ Irrigation en soirée → réduit évaporation de 30%\n\nImpact estimé : passer de 3.2T/ha à 4.1T/ha · +285 000 XAF de revenus."
+};
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function lancerDiagnostic() {
+  const zone = document.getElementById('photo-zone');
+  zone.classList.add('analyzing');
+  document.getElementById('pz-icon').textContent = '🔍';
+  document.getElementById('pz-title').textContent = 'Analyse IA en cours...';
+  document.getElementById('pz-sub').textContent = 'Ne bougez pas votre téléphone';
+  const loading = document.getElementById('loading');
+  loading.classList.add('show');
+  const steps = ['step1','step2','step3','step4'];
+  steps.forEach((s, i) => {
+    setTimeout(() => {
+      document.getElementById(s).classList.add('done');
+      document.getElementById(s).querySelector('.licon').textContent = '✓';
+    }, (i+1)*700);
+  });
+  setTimeout(() => {
+    loading.classList.remove('show');
+    zone.classList.remove('analyzing');
+    document.getElementById('pz-icon').textContent = '✅';
+    document.getElementById('pz-title').textContent = 'Analyse terminée !';
+    document.getElementById('pz-sub').textContent = 'Résultats ci-dessous';
+    document.getElementById('diag-result').classList.add('show');
+    showToast('✅ Diagnostic terminé — Score 87/100');
+    // reset steps
+    steps.forEach(s => {
+      document.getElementById(s).classList.remove('done');
+      document.getElementById(s).querySelector('.licon').textContent = '⏳';
+    });
+  }, 3200);
+}
+
+function sendMsg(txt) {
+  document.getElementById('chat-input').value = txt;
+  goPage('chat');
+  setTimeout(() => envoyerMsg(), 100);
+}
+
+function envoyerMsg() {
+  const input = document.getElementById('chat-input');
+  const txt = input.value.trim();
+  if (!txt) return;
+  const container = document.getElementById('chat-container');
+  // User msg
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.innerHTML = `<div class="chat-label" style="text-align:right;">👨‍🌾 Kofi Mensah</div><div class="chat-bubble-user">${txt}</div>`;
+  container.appendChild(userDiv);
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+  // IA réponse
+  setTimeout(() => {
+    const reponse = reponses[txt] || "Bonne question ! Basé sur vos données agricoles, je vous recommande de consulter les alertes du jour et les prédictions de prix pour prendre la meilleure décision. Voulez-vous que je détaille un aspect particulier de votre exploitation ?";
+    const iaDiv = document.createElement('div');
+    iaDiv.className = 'chat-msg ai';
+    iaDiv.innerHTML = `<div class="chat-label">🧠 Ambéra IA</div><div class="chat-bubble-ai">${reponse.replace(/\n/g,'<br>')}</div>`;
+    container.appendChild(iaDiv);
+    container.scrollTop = container.scrollHeight;
+  }, 1200);
+}
+</script>
+</body>
+</html>

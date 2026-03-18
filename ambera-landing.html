@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambera — L'Infrastructure Agricole Africaine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C8922A;
+  --gold-light: #E8B84B;
+  --earth: #8B4513;
+  --soil: #2C1A0E;
+  --forest: #1A2E1A;
+  --cream: #F5EDD6;
+  --sand: #D4B896;
+  --night: #0D0D0A;
+  --green-accent: #4A7C3F;
+  --amber: #FF8C00;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--night);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+  width: 12px; height: 12px;
+  background: var(--gold);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.15s ease, background 0.2s;
+  transform: translate(-50%, -50%);
+}
+.cursor-ring {
+  width: 36px; height: 36px;
+  border: 1px solid rgba(200,146,42,0.5);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.4s ease, width 0.3s, height 0.3s, opacity 0.3s;
+  transform: translate(-50%, -50%);
+}
+
+/* Noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.35;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 24px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(13,13,10,0.95), transparent);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--cream); }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  color: var(--sand);
+  text-decoration: none;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--gold-light); }
+.nav-cta {
+  background: var(--gold);
+  color: var(--soil);
+  padding: 10px 28px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+.nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 120px 48px 80px;
+}
+
+.hero-bg {
+  position: absolute; inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 60% at 70% 40%, rgba(200,146,42,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 20% 80%, rgba(74,124,63,0.06) 0%, transparent 50%),
+    linear-gradient(160deg, #0D0D0A 0%, #141208 40%, #0D0D0A 100%);
+}
+
+/* Animated grid */
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image: 
+    linear-gradient(rgba(200,146,42,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,146,42,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridDrift 20s linear infinite;
+}
+@keyframes gridDrift {
+  0% { transform: translate(0,0); }
+  100% { transform: translate(60px, 60px); }
+}
+
+/* Orbiting dots */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  animation: orbit 15s ease-in-out infinite;
+}
+.orb-1 { width: 400px; height: 400px; right: -100px; top: 10%; background: radial-gradient(circle, rgba(200,146,42,0.12) 0%, transparent 70%); animation-duration: 18s; }
+.orb-2 { width: 300px; height: 300px; right: 15%; bottom: 10%; background: radial-gradient(circle, rgba(74,124,63,0.1) 0%, transparent 70%); animation-duration: 22s; animation-delay: -8s; }
+@keyframes orbit {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-20px) scale(1.05); }
+  66% { transform: translate(-20px,30px) scale(0.95); }
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 800px; }
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(200,146,42,0.1);
+  border: 1px solid rgba(200,146,42,0.3);
+  padding: 8px 20px;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  margin-bottom: 36px;
+  animation: fadeUp 0.8s ease forwards;
+  opacity: 0;
+}
+.hero-tag::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.5); }
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3.5rem, 8vw, 7.5rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
+  animation: fadeUp 0.8s ease 0.2s forwards;
+  opacity: 0;
+}
+.hero-title .line-gold { color: var(--gold); font-style: italic; }
+.hero-title .line-outline {
+  -webkit-text-stroke: 1px var(--cream);
+  color: transparent;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--sand);
+  max-width: 520px;
+  margin-bottom: 52px;
+  font-weight: 300;
+  animation: fadeUp 0.8s ease 0.4s forwards;
+  opacity: 0;
+}
+
+.hero-actions {
+  display: flex; gap: 20px; align-items: center;
+  animation: fadeUp 0.8s ease 0.6s forwards;
+  opacity: 0;
+}
+.btn-primary {
+  background: var(--gold);
+  color: var(--soil);
+  padding: 16px 40px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.15);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+.btn-primary:hover::after { transform: translateX(0); }
+.btn-primary:hover { transform: translateY(-2px); }
+
+.btn-secondary {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--cream);
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  transition: gap 0.2s, color 0.2s;
+}
+.btn-secondary:hover { gap: 16px; color: var(--gold-light); }
+.btn-arrow {
+  width: 40px; height: 40px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+}
+
+.hero-stats {
+  position: absolute; right: 48px; bottom: 80px;
+  display: flex; flex-direction: column; gap: 24px;
+  animation: fadeUp 0.8s ease 0.8s forwards;
+  opacity: 0;
+}
+.stat-item { text-align: right; }
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.8rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--sand);
+  margin-top: 2px;
+}
+.stat-divider { width: 40px; height: 1px; background: rgba(200,146,42,0.3); margin-left: auto; margin-top: 8px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MARQUEE */
+.marquee-section {
+  border-top: 1px solid rgba(200,146,42,0.15);
+  border-bottom: 1px solid rgba(200,146,42,0.15);
+  padding: 18px 0;
+  overflow: hidden;
+  background: rgba(200,146,42,0.03);
+}
+.marquee-track {
+  display: flex; gap: 60px;
+  animation: marquee 25s linear infinite;
+  white-space: nowrap;
+}
+.marquee-item {
+  display: flex; align-items: center; gap: 16px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: var(--sand);
+  flex-shrink: 0;
+}
+.marquee-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* MODULES SECTION */
+.modules-section {
+  padding: 120px 48px;
+  position: relative;
+}
+.section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 80px;
+}
+.section-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.section-title em { color: var(--gold); font-style: italic; }
+.section-desc {
+  max-width: 360px;
+  color: var(--sand);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  font-weight: 300;
+  text-align: right;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto;
+  gap: 2px;
+}
+
+.module-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(200,146,42,0.08);
+  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s, border-color 0.3s;
+  cursor: pointer;
+}
+.module-card:hover {
+  background: rgba(200,146,42,0.05);
+  border-color: rgba(200,146,42,0.25);
+}
+.module-card:hover .module-arrow { transform: translate(4px, -4px); opacity: 1; }
+.module-card:hover .module-bg-num { opacity: 0.06; }
+
+.module-card.featured {
+  grid-column: span 2;
+  background: rgba(200,146,42,0.06);
+  border-color: rgba(200,146,42,0.2);
+}
+
+.module-bg-num {
+  position: absolute;
+  right: -10px; bottom: -30px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10rem;
+  color: var(--gold);
+  opacity: 0.03;
+  line-height: 1;
+  transition: opacity 0.3s;
+  user-select: none;
+  pointer-events: none;
+}
+
+.module-icon {
+  width: 48px; height: 48px;
+  background: rgba(200,146,42,0.1);
+  border: 1px solid rgba(200,146,42,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 28px;
+}
+
+.module-num {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.module-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.module-name span { color: var(--gold); }
+
+.module-desc {
+  font-size: 0.85rem;
+  color: var(--sand);
+  line-height: 1.65;
+  font-weight: 300;
+  margin-bottom: 24px;
+}
+
+.module-tags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.tag {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border: 1px solid rgba(200,146,42,0.2);
+  color: var(--sand);
+  background: rgba(200,146,42,0.05);
+}
+
+.module-arrow {
+  position: absolute;
+  top: 40px; right: 40px;
+  font-size: 1.1rem;
+  color: var(--gold-light);
+  opacity: 0;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+/* VISION SECTION */
+.vision-section {
+  padding: 120px 48px;
+  background: linear-gradient(160deg, rgba(200,146,42,0.04) 0%, transparent 50%);
+  border-top: 1px solid rgba(200,146,42,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.vision-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: center;
+}
+
+.vision-left .big-quote {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 40px;
+}
+.vision-left .big-quote em { color: var(--gold); font-style: italic; display: block; }
+
+.vision-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.vision-list li {
+  display: flex; align-items: flex-start; gap: 16px;
+  font-size: 0.9rem;
+  color: var(--sand);
+  line-height: 1.6;
+}
+.vision-list li::before {
+  content: '→';
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.vision-right {
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.vision-metric {
+  padding: 28px 36px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(200,146,42,0.08);
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background 0.2s;
+}
+.vision-metric:hover { background: rgba(200,146,42,0.04); }
+
+.metric-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sand);
+}
+.metric-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--gold-light);
+  letter-spacing: 0.05em;
+}
+
+/* MAP SECTION */
+.map-section {
+  padding: 120px 48px;
+  border-top: 1px solid rgba(200,146,42,0.1);
+  text-align: center;
+}
+
+.map-container {
+  margin: 60px auto 0;
+  max-width: 700px;
+  position: relative;
+}
+
+.map-visual {
+  width: 100%;
+  background: rgba(255,255,255,0.01);
+  border: 1px solid rgba(200,146,42,0.1);
+  padding: 60px;
+  position: relative;
+}
+
+/* Simple Africa silhouette using CSS + SVG inline */
+.africa-svg {
+  width: 260px;
+  margin: 0 auto;
+  display: block;
+  opacity: 0.7;
+}
+
+.expansion-labels {
+  display: flex; justify-content: space-around; margin-top: 40px;
+}
+.exp-item { text-align: center; }
+.exp-phase {
+  display: inline-block;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 8px;
+}
+.exp-phase.active { background: var(--gold); color: var(--soil); }
+.exp-phase.next { background: rgba(200,146,42,0.2); color: var(--gold); border: 1px solid rgba(200,146,42,0.4); }
+.exp-phase.future { background: rgba(255,255,255,0.05); color: var(--sand); border: 1px solid rgba(255,255,255,0.1); }
+.exp-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sand); }
+
+/* CTA SECTION */
+.cta-section {
+  padding: 120px 48px;
+  background: linear-gradient(160deg, #141208 0%, var(--night) 100%);
+  border-top: 1px solid rgba(200,146,42,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-bg-text {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20vw;
+  color: rgba(200,146,42,0.03);
+  bottom: -2vw;
+  left: 0; right: 0;
+  text-align: center;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cta-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  margin-bottom: 24px;
+}
+.cta-title em { color: var(--gold); font-style: italic; display: block; }
+
+.cta-sub {
+  color: var(--sand);
+  font-size: 1rem;
+  line-height: 1.7;
+  font-weight: 300;
+  margin-bottom: 48px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-buttons {
+  display: flex; gap: 16px; justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-lg {
+  padding: 20px 52px;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-lg:hover { transform: translateY(-3px); }
+.btn-gold { background: var(--gold); color: var(--soil); }
+.btn-gold:hover { box-shadow: 0 20px 50px rgba(200,146,42,0.3); }
+.btn-outline { border: 1px solid rgba(200,146,42,0.4); color: var(--gold-light); }
+.btn-outline:hover { border-color: var(--gold); background: rgba(200,146,42,0.05); }
+
+/* FOOTER */
+footer {
+  padding: 48px;
+  border-top: 1px solid rgba(200,146,42,0.1);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+.footer-logo span { color: rgba(255,255,255,0.3); }
+.footer-copy {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.1em;
+}
+.footer-tagline {
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(200,146,42,0.5);
+}
+
+/* SCROLL REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  nav { padding: 20px 24px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 24px 60px; }
+  .hero-stats { position: static; flex-direction: row; gap: 40px; margin-top: 60px; }
+  .stat-item { text-align: left; }
+  .stat-divider { margin-left: 0; }
+  .modules-section { padding: 80px 24px; }
+  .modules-grid { grid-template-columns: 1fr; gap: 2px; }
+  .module-card.featured { grid-column: span 1; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .section-desc { text-align: left; }
+  .vision-inner { grid-template-columns: 1fr; gap: 60px; }
+  .cta-section { padding: 80px 24px; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">AMBE<span>RA</span></a>
+  <ul class="nav-links">
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="#vision">Vision</a></li>
+    <li><a href="#expansion">Expansion</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Rejoindre</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">
+      <span></span>
+      Cameroun · Tchad · Afrique Centrale
+    </div>
+
+    <h1 class="hero-title">
+      L'infrastructure<br>
+      <span class="line-gold">agricole</span><br>
+      <span class="line-outline">africaine</span>
+    </h1>
+
+    <p class="hero-sub">
+      Ambera organise et numérise l'agriculture africaine pour libérer son potentiel économique.
+      Un écosystème complet : marché, logistique, finance, data et intelligence artificielle.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#modules" class="btn-primary">Découvrir la plateforme</a>
+      <a href="#vision" class="btn-secondary">
+        Notre vision
+        <span class="btn-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">54</div>
+      <div class="stat-label">Pays africains</div>
+      <div class="stat-divider"></div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">7</div>
+      <div class="stat-label">Modules intégrés</div>
+      <div class="stat-divider"></div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">1</div>
+      <div class="stat-label">Plateforme unifiée</div>
+      <div class="stat-divider"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Market</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Logistics</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Finance</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Data</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Intelligence</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Trade</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Ecosystem</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Cameroun · Tchad</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Commerce Continental</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Market</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Logistics</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Finance</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Data</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Intelligence</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Trade</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Ambera Ecosystem</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Cameroun · Tchad</div>
+    <div class="marquee-item"><span class="marquee-dot"></span>Commerce Continental</div>
+  </div>
+</div>
+
+<!-- MODULES -->
+<section class="modules-section" id="modules">
+  <div class="section-header reveal">
+    <div>
+      <div class="section-label">Architecture de la plateforme</div>
+      <h2 class="section-title">7 modules.<br><em>1 écosystème.</em></h2>
+    </div>
+    <p class="section-desc">Chaque module est une brique autonome, puissante seule et décuplée en synergie avec les autres.</p>
+  </div>
+
+  <div class="modules-grid">
+
+    <div class="module-card featured reveal">
+      <div class="module-bg-num">01</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">🛒</div>
+      <div class="module-num">Module 01 — Priorité</div>
+      <h3 class="module-name">Ambera <span>Market</span></h3>
+      <p class="module-desc">Connecter producteurs et acheteurs directement. Matching automatique par IA selon prix, qualité, localisation et volume. Un marché transparent, sans intermédiaires, avec historique sécurisé de chaque transaction.</p>
+      <div class="module-tags">
+        <span class="tag">Matching IA</span>
+        <span class="tag">Négociation sécurisée</span>
+        <span class="tag">Temps réel</span>
+        <span class="tag">Transparence des prix</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-bg-num">02</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">🚚</div>
+      <div class="module-num">Module 02</div>
+      <h3 class="module-name">Ambera <span>Logistics</span></h3>
+      <p class="module-desc">Collecteurs locaux, camions, motos et tricycles. Optimisation des routes par IA et suivi en temps réel. Réduction des pertes post-récolte.</p>
+      <div class="module-tags">
+        <span class="tag">Optimisation IA</span>
+        <span class="tag">Suivi GPS</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-bg-num">03</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">💳</div>
+      <div class="module-num">Module 03</div>
+      <h3 class="module-name">Ambera <span>Finance</span></h3>
+      <p class="module-desc">Microcrédits intelligents, scoring IA, paiement mobile intégré et assurance récolte. Intégration formelle des producteurs.</p>
+      <div class="module-tags">
+        <span class="tag">Microcrédit</span>
+        <span class="tag">Mobile Money</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-bg-num">04</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">📊</div>
+      <div class="module-num">Module 04</div>
+      <h3 class="module-name">Ambera <span>Data</span></h3>
+      <p class="module-desc">Prix du marché en temps réel, flux de produits, météo, tendances. La plus grande base de données agricoles d'Afrique centrale.</p>
+      <div class="module-tags">
+        <span class="tag">Big Data</span>
+        <span class="tag">Météo</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-bg-num">05</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">🧠</div>
+      <div class="module-num">Module 05</div>
+      <h3 class="module-name">Ambera <span>Intelligence</span></h3>
+      <p class="module-desc">Diagnostic des cultures par photo, prédiction des prix à 2–4 semaines, optimisation des rendements, détection des fraudes.</p>
+      <div class="module-tags">
+        <span class="tag">Vision IA</span>
+        <span class="tag">Prédictions</span>
+      </div>
+    </div>
+
+    <div class="module-card reveal">
+      <div class="module-bg-num">06</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">🌍</div>
+      <div class="module-num">Module 06</div>
+      <h3 class="module-name">Ambera <span>Trade</span></h3>
+      <p class="module-desc">Export vers Europe, Chine, Moyen-Orient. Standardisation et traçabilité pour marchés internationaux. Le Alibaba agricole africain.</p>
+      <div class="module-tags">
+        <span class="tag">Export</span>
+        <span class="tag">Traçabilité</span>
+      </div>
+    </div>
+
+    <div class="module-card featured reveal">
+      <div class="module-bg-num">07</div>
+      <span class="module-arrow">↗</span>
+      <div class="module-icon">🔗</div>
+      <div class="module-num">Module 07 — Infrastructure</div>
+      <h3 class="module-name">Ambera <span>Ecosystem</span></h3>
+      <p class="module-desc">Le système nerveux du groupe. Connecte toutes les filiales — Oils & Grains, Cocoa & Chocolate, Agricultural Trade, Financial Services, Market & Retail — dans un système cohérent et puissant.</p>
+      <div class="module-tags">
+        <span class="tag">Oils & Grains</span>
+        <span class="tag">Cocoa & Chocolate</span>
+        <span class="tag">Financial Services</span>
+        <span class="tag">Retail</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- VISION -->
+<section class="vision-section" id="vision">
+  <div class="vision-inner">
+    <div class="vision-left reveal">
+      <div class="section-label">Notre philosophie</div>
+      <p class="big-quote">
+        Construit depuis<br>les besoins<br>
+        <em>fondamentaux.</em>
+      </p>
+      <ul class="vision-list">
+        <li>Tout est construit à partir des besoins du producteur, de l'acheteur et de la logistique — first principles thinking.</li>
+        <li>La technologie n'est pas la fin, c'est le moteur d'une transformation économique réelle.</li>
+        <li>Commencer par le Cameroun et le Tchad, étendre à toute l'Afrique centrale, puis au continent.</li>
+        <li>Ambera devient l'infrastructure du commerce agricole africain — pas une app, un système économique complet.</li>
+      </ul>
+    </div>
+
+    <div class="vision-right reveal">
+      <div class="vision-metric">
+        <span class="metric-label">Démarrage</span>
+        <span class="metric-value">Cameroun & Tchad</span>
+      </div>
+      <div class="vision-metric">
+        <span class="metric-label">Phase 2</span>
+        <span class="metric-value">Afrique Centrale</span>
+      </div>
+      <div class="vision-metric">
+        <span class="metric-label">Vision finale</span>
+        <span class="metric-value">54 Pays</span>
+      </div>
+      <div class="vision-metric">
+        <span class="metric-label">Modèle</span>
+        <span class="metric-value">Infrastructure</span>
+      </div>
+      <div class="vision-metric">
+        <span class="metric-label">Approche</span>
+        <span class="metric-value">First Principles</span>
+      </div>
+      <div class="vision-metric">
+        <span class="metric-label">Moteur</span>
+        <span class="metric-value">IA + Data</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPANSION -->
+<section class="map-section" id="expansion">
+  <div class="section-label reveal">Expansion géographique</div>
+  <h2 class="section-title reveal">Cameroun d'abord.<br><em>L'Afrique ensuite.</em></h2>
+
+  <div class="map-container reveal">
+    <div class="map-visual">
+
+      <!-- Simple Africa SVG representation -->
+      <svg class="africa-svg" viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M80 10 C60 12 45 20 40 35 C35 50 38 65 35 80 C30 100 20 110 18 130 C15 155 25 175 35 190 C50 210 70 225 90 240 C105 250 115 255 120 245 C125 235 118 220 125 205 C135 185 150 175 155 155 C162 130 158 105 162 85 C165 65 175 50 170 35 C163 18 148 10 130 8 C115 6 95 8 80 10Z" 
+          fill="rgba(200,146,42,0.08)" stroke="rgba(200,146,42,0.3)" stroke-width="1.5"/>
+        
+        <!-- Cameroon/Chad highlight -->
+        <ellipse cx="98" cy="105" rx="22" ry="18" fill="rgba(200,146,42,0.25)" stroke="rgba(200,146,42,0.6)" stroke-width="1.5"/>
+        
+        <!-- Pulsing dot - Cameroon -->
+        <circle cx="93" cy="110" r="4" fill="var(--gold)">
+          <animate attributeName="r" values="4;7;4" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="93" cy="110" r="3" fill="#C8922A"/>
+        
+        <!-- Chad dot -->
+        <circle cx="110" cy="100" r="3" fill="rgba(200,146,42,0.7)">
+          <animate attributeName="r" values="3;5;3" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Central Africa expansion ring -->
+        <circle cx="100" cy="108" r="35" fill="none" stroke="rgba(200,146,42,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+        
+        <!-- Continental ring -->
+        <circle cx="100" cy="120" r="75" fill="none" stroke="rgba(200,146,42,0.06)" stroke-width="1" stroke-dasharray="3 8"/>
+      </svg>
+
+      <div class="expansion-labels">
+        <div class="exp-item">
+          <div class="exp-phase active">1</div>
+          <div class="exp-label">Cameroun<br>& Tchad</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-phase next">2</div>
+          <div class="exp-label">Afrique<br>Centrale</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-phase future">3</div>
+          <div class="exp-label">Afrique<br>de l'Ouest</div>
+        </div>
+        <div class="exp-item">
+          <div class="exp-phase future">4</div>
+          <div class="exp-label">Continent<br>Africain</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="cta-bg-text">AMBERA</div>
+  <div class="cta-inner">
+    <div class="section-label">Rejoindre l'aventure</div>
+    <h2 class="cta-title reveal">
+      Bâtissons l'avenir
+      <em>agricole africain.</em>
+    </h2>
+    <p class="cta-sub reveal">
+      Vous êtes investisseur, partenaire industriel, producteur ou développeur — 
+      Ambera construit l'infrastructure de demain. Rejoignez-nous maintenant.
+    </p>
+    <div class="cta-buttons reveal">
+      <a href="mailto:contact@ambera.africa" class="btn-lg btn-gold">Nous contacter</a>
+      <a href="#modules" class="btn-lg btn-outline">Voir les modules</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">AMBE<span>RA</span></div>
+  <div class="footer-tagline">L'infrastructure agricole africaine</div>
+  <div class="footer-copy">© 2025 Ambera Group · Yaoundé, Cameroun</div>
+</footer>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+function animateRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button, .module-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.transform = 'translate(-50%,-50%) scale(2)';
+    ring.style.width = '60px';
+    ring.style.height = '60px';
+    ring.style.opacity = '0.5';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+    ring.style.width = '36px';
+    ring.style.height = '36px';
+    ring.style.opacity = '1';
+  });
+});
+
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+reveals.forEach(el => observer.observe(el));
+
+// Staggered module cards
+const cards = document.querySelectorAll('.module-card');
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const cards = entry.target.querySelectorAll ? [entry.target] : [];
+      entry.target.style.opacity = '0';
+      entry.target.style.transform = 'translateY(30px)';
+      entry.target.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      setTimeout(() => {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }, 100);
+      cardObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.05 });
+
+cards.forEach((card, i) => {
+  card.style.transitionDelay = (i * 0.06) + 's';
+  cardObserver.observe(card);
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Counter animation
+function animateValue(el, end, duration) {
+  let start = 0;
+  const step = end / (duration / 16);
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= end) { start = end; clearInterval(timer); }
+    el.textContent = Math.floor(start);
+  }, 16);
+}
+</script>
+</body>
+</html>

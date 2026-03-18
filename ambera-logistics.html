@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ambéra Logistics — Suivi Livraisons</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F4F7F1;color:#1a2e1a;min-height:100vh;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#b0c4de;border-radius:4px;}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.8);opacity:.2}}
+@keyframes movetruk{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideup{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* TOPBAR */
+#topbar{background:linear-gradient(135deg,#1565C0,#1976D2);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(21,101,192,.35);}
+.logo{font-size:1.4rem;font-weight:900;color:#fff;}
+.logo-sub{font-size:.62rem;color:rgba(255,255,255,.8);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+.live-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:20px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4CAF65;animation:pulse 2s infinite;}
+.live-txt{color:#fff;font-size:.68rem;font-weight:700;}
+
+/* NAV */
+#bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #DDEEFF;display:flex;z-index:100;box-shadow:0 -2px 12px rgba(21,101,192,.1);}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;gap:3px;}
+.bnav.active .blabel{color:#1565C0;}
+.bicon{font-size:1.15rem;}
+.blabel{font-size:.57rem;font-weight:600;color:#8aaa8a;letter-spacing:.02em;}
+
+/* MAIN */
+#main{padding:16px 16px 90px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* MAP SIMULÉE */
+.map-container{background:linear-gradient(160deg,#E8F0FE,#C5D8F0);border-radius:14px;height:220px;position:relative;overflow:hidden;margin-bottom:14px;border:1px solid #BBCFE8;}
+.map-bg{position:absolute;inset:0;}
+/* Routes simulées */
+.road{position:absolute;background:rgba(255,255,255,.6);border-radius:2px;}
+.road.h{height:3px;}
+.road.v{width:3px;}
+/* Villes */
+.city-dot{position:absolute;transform:translate(-50%,-50%);}
+.city-dot .dot{width:10px;height:10px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);}
+.city-dot .city-name{font-size:.52rem;font-weight:700;color:#1565C0;white-space:nowrap;margin-top:3px;text-align:center;}
+/* Camion animé */
+.truck-marker{position:absolute;transform:translate(-50%,-50%);z-index:10;animation:movetruk 2s infinite;}
+.truck-icon{font-size:1.4rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));}
+.truck-pulse{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:rgba(21,101,192,.2);animation:pulse 2s infinite;}
+/* Route tracée */
+.route-line{position:absolute;background:rgba(21,101,192,.6);height:3px;transform-origin:left center;border-radius:2px;}
+.route-done{background:rgba(76,175,101,.7);}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #DDEEFF;border-radius:12px;padding:16px;margin-bottom:14px;animation:pop .4s ease both;}
+.card-title{font-weight:800;font-size:.9rem;color:#1a2e1a;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between;}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:#fff;border:1px solid #DDEEFF;border-radius:12px;padding:14px;text-align:center;}
+.kval{font-size:1.7rem;font-weight:900;line-height:1;margin-bottom:4px;}
+.klbl{font-size:.6rem;color:#8aaa8a;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.ksub{font-size:.64rem;margin-top:3px;font-weight:600;}
+
+/* LIVRAISON CARD */
+.livraison-card{border:1px solid #DDEEFF;border-radius:11px;overflow:hidden;margin-bottom:12px;background:#fff;cursor:pointer;transition:box-shadow .2s;}
+.livraison-card:hover{box-shadow:0 4px 16px rgba(21,101,192,.12);}
+.livraison-card.sel{border-color:#1565C0;}
+.lc-header{padding:11px 14px;display:flex;justify-content:space-between;align-items:center;}
+.lc-id{font-size:.65rem;color:rgba(255,255,255,.85);font-weight:600;}
+.lc-statut{font-size:.62rem;font-weight:800;color:#fff;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;}
+.lc-body{padding:12px 14px;}
+.lc-route{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.lc-ville{font-weight:700;font-size:.82rem;}
+.lc-arrow{color:#1565C0;font-size:1rem;}
+.lc-details{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.lc-det{background:#F0F5FF;border-radius:6px;padding:8px;text-align:center;}
+.lc-det-val{font-weight:800;font-size:.78rem;color:#1565C0;}
+.lc-det-lbl{font-size:.56rem;color:#8aaa8a;margin-top:2px;}
+.lc-progress{margin-bottom:10px;}
+.prog-label{display:flex;justify-content:space-between;font-size:.62rem;color:#8aaa8a;margin-bottom:4px;}
+.prog-bar{height:7px;background:#E8F0FE;border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#1565C0,#42A5F5);transition:width 1s ease;}
+
+/* ÉTAPES LIVRAISON */
+.etapes{padding:0 2px;}
+.etape{display:flex;gap:12px;align-items:flex-start;padding:10px 0;position:relative;}
+.etape:not(:last-child)::after{content:'';position:absolute;left:11px;top:28px;width:2px;height:calc(100% - 10px);background:#E8F0FE;}
+.etape-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;z-index:1;}
+.etape-icon.done{background:#1565C0;color:#fff;}
+.etape-icon.current{background:#42A5F5;color:#fff;animation:pulse 2s infinite;}
+.etape-icon.pending{background:#E8F0FE;color:#8aaa8a;}
+.etape-content .etape-nom{font-weight:700;font-size:.78rem;}
+.etape-content .etape-detail{font-size:.62rem;color:#8aaa8a;margin-top:2px;}
+.etape-time{font-size:.6rem;color:#1565C0;font-weight:700;margin-left:auto;white-space:nowrap;}
+
+/* COLLECTEURS */
+.collecteur-item{border:1px solid #DDEEFF;border-radius:10px;padding:13px;margin-bottom:10px;background:#fff;display:flex;gap:12px;align-items:center;}
+.coll-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:2px solid #DDEEFF;}
+.coll-info{flex:1;}
+.coll-nom{font-weight:700;font-size:.82rem;}
+.coll-zone{font-size:.62rem;color:#8aaa8a;margin-top:2px;}
+.coll-stats{display:flex;gap:10px;margin-top:6px;}
+.coll-stat{font-size:.62rem;color:#6a8a6a;background:#F0F7EC;padding:2px 8px;border-radius:8px;}
+.coll-dispo{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:20px;}
+.coll-dispo.libre{background:#E8F5E9;color:#2E7D32;}
+.coll-dispo.occupe{background:#FFEBEE;color:#C62828;}
+
+/* OPTIMISATION */
+.optim-card{background:linear-gradient(135deg,#1565C0,#1976D2);border-radius:12px;padding:16px;color:#fff;margin-bottom:14px;}
+.optim-title{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:8px;}
+.optim-val{font-size:1.5rem;font-weight:900;margin-bottom:4px;}
+.optim-sub{font-size:.7rem;opacity:.85;}
+.optim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+.optim-stat{background:rgba(255,255,255,.12);border-radius:8px;padding:10px;text-align:center;}
+.optim-stat-val{font-size:1rem;font-weight:900;}
+.optim-stat-lbl{font-size:.58rem;opacity:.8;margin-top:2px;}
+
+/* FORM */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.72rem;font-weight:700;color:#1a2e1a;margin-bottom:6px;display:block;}
+.form-input{width:100%;background:#F0F5FF;border:1px solid #DDEEFF;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:#1565C0;background:#fff;}
+.form-select{width:100%;background:#F0F5FF;border:1px solid #DDEEFF;border-radius:8px;padding:11px 14px;font-size:.82rem;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none;appearance:none;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* BTNS */
+.btn{border:none;border-radius:8px;padding:10px 16px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:filter .15s,transform .1s;}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px);}
+.btn.blue{background:#1565C0;color:#fff;}
+.btn.green{background:#1A5A2D;color:#fff;}
+.btn.outline{background:#fff;color:#1565C0;border:1px solid #1565C0;}
+.btn.grey{background:#F0F5FF;color:#6a8a6a;border:1px solid #DDEEFF;}
+.btn.gold{background:#C8922A;color:#fff;}
+
+/* BADGE */
+.badge{padding:3px 10px;border-radius:20px;font-size:.6rem;font-weight:700;display:inline-block;}
+.b-transit{background:#E3F2FD;color:#1565C0;}
+.b-collecte{background:#FFF8E1;color:#E65100;}
+.b-livre{background:#E8F5E9;color:#2E7D32;}
+.b-retard{background:#FFEBEE;color:#C62828;}
+
+/* SEC HEADER */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.sec-title{font-size:1rem;font-weight:800;color:#1a2e1a;}
+.sec-sub{font-size:.68rem;color:#8aaa8a;margin-top:2px;}
+
+/* ALERTE */
+.alerte{padding:12px 14px;border-radius:10px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start;}
+.alerte.urgente{background:#FFEBEE;border:1px solid #FFCDD2;}
+.alerte.info{background:#E3F2FD;border:1px solid #BBDEFB;}
+.alerte.success{background:#E8F5E9;border:1px solid #C8E6C9;}
+.alerte-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.alerte-txt .alerte-titre{font-weight:700;font-size:.75rem;}
+.alerte-txt .alerte-detail{font-size:.65rem;color:#555;margin-top:2px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1565C0;color:#fff;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.78rem;display:none;z-index:9999;box-shadow:0 8px 24px rgba(21,101,192,.4);animation:toast .3s ease;white-space:nowrap;}
+#toast.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div>
+    <div class="logo">🚚 Ambéra Logistics</div>
+    <div class="logo-sub">Suivi & Optimisation</div>
+  </div>
+  <div class="live-badge">
+    <span class="live-dot"></span>
+    <span class="live-txt">LIVE</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ══ PAGE ACCUEIL ══ -->
+  <div class="page active" id="page-accueil">
+
+    <!-- Carte GPS simulée -->
+    <div class="map-container" style="animation:pop .4s ease both;">
+      <!-- Routes horizontales -->
+      <div class="road h" style="top:35%;left:0;right:0;"></div>
+      <div class="road h" style="top:60%;left:10%;right:10%;"></div>
+      <div class="road h" style="top:80%;left:20%;right:20%;"></div>
+      <!-- Routes verticales -->
+      <div class="road v" style="left:25%;top:0;bottom:0;"></div>
+      <div class="road v" style="left:60%;top:10%;bottom:10%;"></div>
+      <div class="road v" style="left:82%;top:20%;bottom:20%;"></div>
+      <!-- Route tracée Bafoussam → Douala -->
+      <div class="route-line route-done" style="top:35%;left:25%;width:22%;transform:rotate(0deg);"></div>
+      <div class="route-line" style="top:calc(35% + 1px);left:47%;width:28%;transform:rotate(12deg);transform-origin:left center;"></div>
+      <!-- Villes -->
+      <div class="city-dot" style="left:25%;top:35%;">
+        <div class="dot" style="background:#C8922A;"></div>
+        <div class="city-name">Bafoussam</div>
+      </div>
+      <div class="city-dot" style="left:60%;top:35%;">
+        <div class="dot" style="background:#1565C0;animation:pulse 2s infinite;"></div>
+        <div class="city-name" style="color:#1565C0;">● En route</div>
+      </div>
+      <div class="city-dot" style="left:82%;top:60%;">
+        <div class="dot" style="background:#1A5A2D;"></div>
+        <div class="city-name" style="color:#1A5A2D;">Douala</div>
+      </div>
+      <div class="city-dot" style="left:60%;top:60%;">
+        <div class="dot" style="background:#888;"></div>
+        <div class="city-name">Yaoundé</div>
+      </div>
+      <div class="city-dot" style="left:25%;top:80%;">
+        <div class="dot" style="background:#888;"></div>
+        <div class="city-name">Bafoussam</div>
+      </div>
+      <!-- Camion -->
+      <div class="truck-marker" style="left:60%;top:35%;">
+        <div class="truck-pulse"></div>
+        <div class="truck-icon">🚛</div>
+      </div>
+      <!-- Légende -->
+      <div style="position:absolute;bottom:10px;left:12px;background:rgba(255,255,255,.9);border-radius:8px;padding:6px 10px;font-size:.6rem;color:#1565C0;font-weight:700;">
+        🚛 AMB-2847 · 82 km de Douala · ETA : demain 06h00
+      </div>
+      <div style="position:absolute;top:10px;right:12px;background:rgba(255,255,255,.9);border-radius:8px;padding:6px 10px;">
+        <div style="font-size:.6rem;color:#8aaa8a;font-weight:600;">5 véhicules actifs</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi" style="animation:pop .3s ease .05s both;">
+        <div class="kval" style="color:#1565C0;">5</div>
+        <div class="klbl">En transit</div>
+        <div class="ksub" style="color:#1565C0;">Live GPS</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .1s both;">
+        <div class="kval" style="color:#C8922A;">2</div>
+        <div class="klbl">Collecte en cours</div>
+        <div class="ksub" style="color:#C8922A;">Région Ouest</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .15s both;">
+        <div class="kval" style="color:#1A5A2D;">3</div>
+        <div class="klbl">Livrés aujourd'hui</div>
+        <div class="ksub" style="color:#1A5A2D;">142 tonnes</div>
+      </div>
+      <div class="kpi" style="animation:pop .3s ease .2s both;">
+        <div class="kval" style="color:#6A1B9A;">12%</div>
+        <div class="klbl">Économie carburant</div>
+        <div class="ksub" style="color:#6A1B9A;">IA routing</div>
+      </div>
+    </div>
+
+    <!-- Livraisons actives résumé -->
+    <div class="card" style="animation:pop .4s ease .25s both;border-left:4px solid #1565C0;">
+      <div class="card-title">🚛 Livraisons en cours <span class="badge b-transit">5 actives</span></div>
+
+      <div class="livraison-card sel" onclick="goPage('detail')">
+        <div class="lc-header" style="background:linear-gradient(135deg,#6A1B9A,#9C27B0);">
+          <span class="lc-id">AMB-2847 · Maïs 15T</span>
+          <span class="lc-statut">🚛 En transit</span>
+        </div>
+        <div class="lc-body">
+          <div class="lc-route">
+            <span class="lc-ville">📍 Bafoussam</span>
+            <span class="lc-arrow">→→→</span>
+            <span class="lc-ville">🏭 Douala</span>
+          </div>
+          <div class="lc-details">
+            <div class="lc-det"><div class="lc-det-val">82 km</div><div class="lc-det-lbl">Restant</div></div>
+            <div class="lc-det"><div class="lc-det-val">06h00</div><div class="lc-det-lbl">ETA demain</div></div>
+            <div class="lc-det"><div class="lc-det-val">67 km/h</div><div class="lc-det-lbl">Vitesse</div></div>
+          </div>
+          <div class="lc-progress">
+            <div class="prog-label"><span>Progression</span><span style="font-weight:700;color:#6A1B9A;">75% — Bientôt arrivé</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:75%;background:linear-gradient(90deg,#6A1B9A,#AB47BC);"></div></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn blue" style="flex:1;font-size:.68rem;" onclick="event.stopPropagation();goPage('detail')">📍 Suivre en direct</button>
+            <button class="btn grey" onclick="event.stopPropagation();showToast('📞 Chauffeur contacté : Thierry Nkeng')">📞 Chauffeur</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="livraison-card" onclick="showToast('📍 Livraison AMB-2851 sélectionnée')">
+        <div class="lc-header" style="background:linear-gradient(135deg,#1565C0,#1976D2);">
+          <span class="lc-id">AMB-2851 · Sorgho 40T</span>
+          <span class="lc-statut">🚛 En transit</span>
+        </div>
+        <div class="lc-body">
+          <div class="lc-route">
+            <span class="lc-ville">📍 Ngaoundéré</span>
+            <span class="lc-arrow">→→→</span>
+            <span class="lc-ville">🏭 Douala</span>
+          </div>
+          <div class="lc-progress">
+            <div class="prog-label"><span>Progression</span><span style="font-weight:700;color:#1565C0;">30%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:30%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Alertes -->
+    <div class="card" style="animation:pop .4s ease .3s both;">
+      <div class="card-title">🔔 Alertes temps réel</div>
+      <div class="alerte urgente">
+        <span class="alerte-icon">⚠️</span>
+        <div class="alerte-txt">
+          <div class="alerte-titre">Retard possible — AMB-2851</div>
+          <div class="alerte-detail">Trafic dense sur RN1 entre Yaoundé et Douala. Nouveau délai estimé : +2h. Acheteur notifié automatiquement.</div>
+        </div>
+      </div>
+      <div class="alerte info">
+        <span class="alerte-icon">🛣️</span>
+        <div class="alerte-txt">
+          <div class="alerte-titre">Route optimisée — AMB-2847</div>
+          <div class="alerte-detail">L'IA a recalculé un itinéraire via Bafang. Économie : 34 km et 45 min.</div>
+        </div>
+      </div>
+      <div class="alerte success">
+        <span class="alerte-icon">✅</span>
+        <div class="alerte-txt">
+          <div class="alerte-titre">Livraison confirmée — AMB-2839</div>
+          <div class="alerte-detail">Cacao 8T livré à Nestlé Yaoundé. Signature électronique reçue. Paiement débloqué.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE DÉTAIL LIVRAISON ══ -->
+  <div class="page" id="page-detail">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">📦 AMB-2847</div>
+        <div class="sec-sub">Maïs 15T · Kofi Mensah → Brasserie du Cameroun</div>
+      </div>
+      <button class="btn grey" onclick="goPage('accueil')" style="padding:7px 12px;font-size:.7rem;">←</button>
+    </div>
+
+    <!-- Mini carte détail -->
+    <div class="map-container" style="height:160px;margin-bottom:14px;">
+      <div class="road h" style="top:50%;left:0;right:0;"></div>
+      <div class="road v" style="left:20%;top:0;bottom:0;"></div>
+      <div class="road v" style="left:75%;top:0;bottom:0;"></div>
+      <div class="route-line route-done" style="top:50%;left:20%;width:32%;"></div>
+      <div class="route-line" style="top:50%;left:52%;width:23%;"></div>
+      <div class="city-dot" style="left:20%;top:50%;">
+        <div class="dot" style="background:#C8922A;"></div>
+        <div class="city-name">Bafoussam</div>
+      </div>
+      <div class="city-dot" style="left:52%;top:50%;">
+        <div class="truck-pulse" style="width:28px;height:28px;"></div>
+        <div class="truck-icon" style="font-size:1.2rem;">🚛</div>
+        <div class="city-name" style="color:#1565C0;font-weight:800;">● Ici maintenant</div>
+      </div>
+      <div class="city-dot" style="left:75%;top:50%;">
+        <div class="dot" style="background:#1A5A2D;"></div>
+        <div class="city-name" style="color:#1A5A2D;">Douala</div>
+      </div>
+      <div style="position:absolute;bottom:8px;left:10px;background:rgba(255,255,255,.9);border-radius:6px;padding:5px 9px;font-size:.6rem;font-weight:700;color:#1565C0;">
+        🛣️ RN5 → Bafang → Nkongsamba → Douala
+      </div>
+    </div>
+
+    <!-- Infos véhicule -->
+    <div class="card" style="padding:12px 16px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
+        <div style="background:#F0F5FF;border-radius:8px;padding:10px;">
+          <div style="font-size:1rem;font-weight:900;color:#1565C0;">67</div>
+          <div style="font-size:.55rem;color:#8aaa8a;">km/h</div>
+        </div>
+        <div style="background:#F0F5FF;border-radius:8px;padding:10px;">
+          <div style="font-size:1rem;font-weight:900;color:#C8922A;">82</div>
+          <div style="font-size:.55rem;color:#8aaa8a;">km restant</div>
+        </div>
+        <div style="background:#F0F5FF;border-radius:8px;padding:10px;">
+          <div style="font-size:1rem;font-weight:900;color:#1A5A2D;">06h00</div>
+          <div style="font-size:.55rem;color:#8aaa8a;">Arrivée</div>
+        </div>
+        <div style="background:#F0F5FF;border-radius:8px;padding:10px;">
+          <div style="font-size:1rem;font-weight:900;color:#6A1B9A;">75%</div>
+          <div style="font-size:.55rem;color:#8aaa8a;">Carburant</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chauffeur -->
+    <div class="card">
+      <div class="card-title">👤 Chauffeur & Véhicule</div>
+      <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px;">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#42A5F5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;flex-shrink:0;">TN</div>
+        <div>
+          <div style="font-weight:800;font-size:.88rem;">Thierry Nkeng</div>
+          <div style="font-size:.65rem;color:#8aaa8a;margin-top:2px;">📱 +237 677 22 34 56 · Score 94/100</div>
+          <div style="font-size:.65rem;color:#8aaa8a;">🚛 Camion Isuzu 15T · LT 237 AB 2847</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn blue" style="flex:1;" onclick="showToast('📞 Appel vers Thierry Nkeng...')">📞 Appeler</button>
+        <button class="btn outline" onclick="showToast('💬 SMS envoyé à Thierry')">💬 SMS</button>
+        <button class="btn grey" onclick="showToast('📍 Position partagée avec l\'acheteur')">📤 Partager</button>
+      </div>
+    </div>
+
+    <!-- Étapes -->
+    <div class="card">
+      <div class="card-title">🗺️ Étapes de livraison</div>
+      <div class="etapes">
+        <div class="etape">
+          <div class="etape-icon done">✓</div>
+          <div class="etape-content">
+            <div class="etape-nom">Collecte confirmée</div>
+            <div class="etape-detail">Chez Kofi Mensah · 15T chargées · Pesée vérifiée</div>
+          </div>
+          <div class="etape-time">08h30</div>
+        </div>
+        <div class="etape">
+          <div class="etape-icon done">✓</div>
+          <div class="etape-content">
+            <div class="etape-nom">Départ Bafoussam</div>
+            <div class="etape-detail">Itinéraire IA validé · Via Bafang · 245 km</div>
+          </div>
+          <div class="etape-time">09h15</div>
+        </div>
+        <div class="etape">
+          <div class="etape-icon done">✓</div>
+          <div class="etape-content">
+            <div class="etape-nom">Passage Bafang</div>
+            <div class="etape-detail">Checkpoint validé · RAS</div>
+          </div>
+          <div class="etape-time">11h40</div>
+        </div>
+        <div class="etape">
+          <div class="etape-icon current">●</div>
+          <div class="etape-content">
+            <div class="etape-nom" style="color:#1565C0;">En route · Nkongsamba</div>
+            <div class="etape-detail">82 km de Douala · Bonne progression</div>
+          </div>
+          <div class="etape-time" style="color:#1565C0;">En cours</div>
+        </div>
+        <div class="etape">
+          <div class="etape-icon pending">○</div>
+          <div class="etape-content">
+            <div class="etape-nom" style="color:#8aaa8a;">Arrivée Douala</div>
+            <div class="etape-detail">Brasserie du Cameroun · Quai 4</div>
+          </div>
+          <div class="etape-time">06h00 ↑</div>
+        </div>
+        <div class="etape">
+          <div class="etape-icon pending">○</div>
+          <div class="etape-content">
+            <div class="etape-nom" style="color:#8aaa8a;">Déchargement & signature</div>
+            <div class="etape-detail">Paiement Kofi Mensah débloqué à la réception</div>
+          </div>
+          <div class="etape-time">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE COLLECTEURS ══ -->
+  <div class="page" id="page-collecteurs">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">👥 Collecteurs locaux</div>
+        <div class="sec-sub">12 collecteurs · Région Ouest & Nord</div>
+      </div>
+      <button class="btn blue" onclick="showToast('➕ Formulaire d\'ajout collecteur ouvert')" style="padding:7px 12px;font-size:.7rem;">+ Ajouter</button>
+    </div>
+
+    <div class="optim-card" style="animation:pop .4s ease both;">
+      <div class="optim-title">🤖 Réseau Ambéra Logistics</div>
+      <div class="optim-val">12 collecteurs actifs</div>
+      <div class="optim-sub">Couvrent 6 régions du Cameroun + Tchad</div>
+      <div class="optim-grid">
+        <div class="optim-stat"><div class="optim-stat-val">8</div><div class="optim-stat-lbl">Disponibles</div></div>
+        <div class="optim-stat"><div class="optim-stat-val">4</div><div class="optim-stat-lbl">En mission</div></div>
+        <div class="optim-stat"><div class="optim-stat-val">94%</div><div class="optim-stat-lbl">Satisfaction</div></div>
+      </div>
+    </div>
+
+    <div class="collecteur-item" style="animation:pop .3s ease .05s both;">
+      <div class="coll-avatar" style="background:#E8F5E0;">🚛</div>
+      <div class="coll-info">
+        <div class="coll-nom">Thierry Nkeng</div>
+        <div class="coll-zone">📍 Bafoussam · Région Ouest</div>
+        <div class="coll-stats">
+          <span class="coll-stat">⭐ 4.9</span>
+          <span class="coll-stat">47 missions</span>
+          <span class="coll-stat">Camion 15T</span>
+        </div>
+      </div>
+      <span class="coll-dispo occupe">En mission</span>
+    </div>
+
+    <div class="collecteur-item" style="animation:pop .3s ease .1s both;">
+      <div class="coll-avatar" style="background:#E3F2FD;">🏍️</div>
+      <div class="coll-info">
+        <div class="coll-nom">Ibrahim Bello</div>
+        <div class="coll-zone">📍 Garoua · Région Nord</div>
+        <div class="coll-stats">
+          <span class="coll-stat">⭐ 4.7</span>
+          <span class="coll-stat">31 missions</span>
+          <span class="coll-stat">Moto 500 kg</span>
+        </div>
+      </div>
+      <span class="coll-dispo libre">Disponible</span>
+    </div>
+
+    <div class="collecteur-item" style="animation:pop .3s ease .15s both;">
+      <div class="coll-avatar" style="background:#FFF8E1;">🛺</div>
+      <div class="coll-info">
+        <div class="coll-nom">Pauline Essono</div>
+        <div class="coll-zone">📍 Mbalmayo · Centre</div>
+        <div class="coll-stats">
+          <span class="coll-stat">⭐ 4.8</span>
+          <span class="coll-stat">28 missions</span>
+          <span class="coll-stat">Tricycle 2T</span>
+        </div>
+      </div>
+      <span class="coll-dispo libre">Disponible</span>
+    </div>
+
+    <div class="collecteur-item" style="animation:pop .3s ease .2s both;">
+      <div class="coll-avatar" style="background:#F3E5F5;">🚛</div>
+      <div class="coll-info">
+        <div class="coll-nom">Moussa Alifa</div>
+        <div class="coll-zone">📍 Moundou · Tchad</div>
+        <div class="coll-stats">
+          <span class="coll-stat">⭐ 4.6</span>
+          <span class="coll-stat">19 missions</span>
+          <span class="coll-stat">Camion 10T</span>
+        </div>
+      </div>
+      <span class="coll-dispo libre">Disponible</span>
+    </div>
+
+    <div class="collecteur-item" style="animation:pop .3s ease .25s both;">
+      <div class="coll-avatar" style="background:#FFEBEE;">🚐</div>
+      <div class="coll-info">
+        <div class="coll-nom">Amina Tchakoua</div>
+        <div class="coll-zone">📍 Maroua · Extrême-Nord</div>
+        <div class="coll-stats">
+          <span class="coll-stat">⭐ 4.5</span>
+          <span class="coll-stat">22 missions</span>
+          <span class="coll-stat">Minibus 3T</span>
+        </div>
+      </div>
+      <span class="coll-dispo occupe">En mission</span>
+    </div>
+  </div>
+
+  <!-- ══ PAGE OPTIMISATION IA ══ -->
+  <div class="page" id="page-optimisation">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🤖 Optimisation IA</div>
+        <div class="sec-sub">Routes intelligentes · Moins de coûts</div>
+      </div>
+    </div>
+
+    <div class="optim-card" style="animation:pop .4s ease both;">
+      <div class="optim-title">💡 Économies réalisées ce mois</div>
+      <div class="optim-val">342 000 XAF</div>
+      <div class="optim-sub">Grâce à l'optimisation IA des 27 livraisons</div>
+      <div class="optim-grid">
+        <div class="optim-stat"><div class="optim-stat-val">-12%</div><div class="optim-stat-lbl">Carburant</div></div>
+        <div class="optim-stat"><div class="optim-stat-val">-18%</div><div class="optim-stat-lbl">Temps route</div></div>
+        <div class="optim-stat"><div class="optim-stat-val">-8%</div><div class="optim-stat-lbl">Pertes prod.</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="animation:pop .4s ease .1s both;">
+      <div class="card-title">🗺️ Routes recommandées aujourd'hui</div>
+
+      <div style="border:1px solid #DDEEFF;border-radius:10px;padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:.82rem;">🌽 Bafoussam → Douala</div>
+          <span class="badge b-transit">Optimale</span>
+        </div>
+        <div style="font-size:.72rem;color:#1565C0;font-weight:600;margin-bottom:6px;">Via Bafang · Nkongsamba · Autoroute</div>
+        <div style="display:flex;gap:10px;font-size:.65rem;color:#8aaa8a;">
+          <span>📏 245 km</span><span>⏱️ 4h30</span><span>⛽ 38 L</span><span>💰 19 000 XAF</span>
+        </div>
+        <div style="margin-top:8px;font-size:.65rem;color:#2E7D32;background:#E8F5E0;padding:6px 10px;border-radius:6px;">
+          ✅ Route optimisée — économie de 34 km vs itinéraire direct
+        </div>
+      </div>
+
+      <div style="border:1px solid #DDEEFF;border-radius:10px;padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:.82rem;">🌾 Ngaoundéré → Douala</div>
+          <span class="badge b-collecte">Trafic</span>
+        </div>
+        <div style="font-size:.72rem;color:#E65100;font-weight:600;margin-bottom:6px;">⚠️ RN1 chargée · Déviation conseillée</div>
+        <div style="display:flex;gap:10px;font-size:.65rem;color:#8aaa8a;">
+          <span>📏 610 km</span><span>⏱️ 9h (+ 2h trafic)</span><span>⛽ 95 L</span>
+        </div>
+        <div style="margin-top:8px;font-size:.65rem;color:#C62828;background:#FFEBEE;padding:6px 10px;border-radius:6px;">
+          ⚠️ Partir avant 04h00 demain pour éviter le trafic de Yaoundé
+        </div>
+      </div>
+
+      <div style="border:1px solid #DDEEFF;border-radius:10px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:.82rem;">🌱 Garoua → Yaoundé</div>
+          <span class="badge b-livre">Libre</span>
+        </div>
+        <div style="font-size:.72rem;color:#2E7D32;font-weight:600;margin-bottom:6px;">✅ Route dégagée · Conditions idéales</div>
+        <div style="display:flex;gap:10px;font-size:.65rem;color:#8aaa8a;">
+          <span>📏 480 km</span><span>⏱️ 7h00</span><span>⛽ 72 L</span><span>💰 36 000 XAF</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="animation:pop .4s ease .2s both;">
+      <div class="card-title">📦 Regroupement de livraisons</div>
+      <p style="font-size:.75rem;color:#5a3a6a;line-height:1.6;margin-bottom:12px;">
+        🤖 L'IA a détecté <strong>3 livraisons vers Douala</strong> cette semaine. En les regroupant sur 1 seul camion, vous économisez <strong>87 000 XAF</strong> de transport.
+      </p>
+      <button class="btn blue" style="width:100%;" onclick="showToast('✅ Regroupement validé — Économie de 87 000 XAF appliquée')">Valider le regroupement</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE NOUVELLE LIVRAISON ══ -->
+  <div class="page" id="page-nouvelle">
+    <div class="sec-header">
+      <div>
+        <div class="sec-title">🚚 Nouvelle livraison</div>
+        <div class="sec-sub">L'IA assigne le meilleur collecteur</div>
+      </div>
+      <button class="btn grey" onclick="goPage('accueil')" style="padding:7px 12px;font-size:.7rem;">✕</button>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">📦 Produit à livrer</label>
+        <select class="form-select">
+          <option>Maïs — 15 tonnes (AMB-2847)</option>
+          <option>Soja — 8 tonnes</option>
+          <option>Plantain — 4 tonnes</option>
+          <option>Autre produit</option>
+        </select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">📍 Point de collecte</label>
+          <input type="text" class="form-input" placeholder="Ex : Bafoussam" value="Bafoussam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">🏭 Destination</label>
+          <input type="text" class="form-input" placeholder="Ex : Douala" value="Douala">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">📅 Date souhaitée</label>
+        <input type="date" class="form-input" id="liv-date">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🚛 Type de véhicule</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div onclick="selectVeh(this)" style="border:2px solid #1565C0;background:#E3F2FD;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.3rem;">🚛</div>
+            <div style="font-size:.62rem;font-weight:700;color:#1565C0;margin-top:3px;">Camion 15T</div>
+          </div>
+          <div onclick="selectVeh(this)" style="border:2px solid #DDEEFF;background:#F0F5FF;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.3rem;">🛺</div>
+            <div style="font-size:.62rem;font-weight:700;color:#8aaa8a;margin-top:3px;">Tricycle 2T</div>
+          </div>
+          <div onclick="selectVeh(this)" style="border:2px solid #DDEEFF;background:#F0F5FF;border-radius:8px;padding:10px;text-align:center;cursor:pointer;">
+            <div style="font-size:1.3rem;">🏍️</div>
+            <div style="font-size:.62rem;font-weight:700;color:#8aaa8a;margin-top:3px;">Moto 500kg</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estimation IA -->
+      <div style="background:#E3F2FD;border:1px solid #BBDEFB;border-radius:10px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:.7rem;font-weight:700;color:#1565C0;margin-bottom:10px;">🤖 Estimation IA</div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #BBDEFB;">
+          <span style="font-size:.7rem;color:#555;">Distance estimée</span>
+          <span style="font-weight:700;font-size:.75rem;">245 km</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #BBDEFB;">
+          <span style="font-size:.7rem;color:#555;">Durée estimée</span>
+          <span style="font-weight:700;font-size:.75rem;">4h30</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #BBDEFB;">
+          <span style="font-size:.7rem;color:#555;">Collecteur assigné</span>
+          <span style="font-weight:700;font-size:.75rem;color:#1A5A2D;">Ibrahim Bello ⭐ 4.7</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;">
+          <span style="font-size:.72rem;font-weight:700;color:#555;">Coût estimé</span>
+          <span style="font-weight:900;font-size:.9rem;color:#1565C0;">19 500 XAF</span>
+        </div>
+      </div>
+
+      <button class="btn blue" style="width:100%;padding:14px;font-size:.88rem;border-radius:10px;" onclick="confirmerLivraison()">
+        🚀 Confirmer & Lancer la livraison
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV BAS -->
+<div id="bottom-nav">
+  <div class="bnav active" id="nav-accueil" onclick="goPage('accueil')">
+    <span class="bicon">🗺️</span>
+    <span class="blabel">Carte</span>
+  </div>
+  <div class="bnav" id="nav-detail" onclick="goPage('detail')">
+    <span class="bicon">📦</span>
+    <span class="blabel">Suivi</span>
+  </div>
+  <div class="bnav" id="nav-nouvelle" onclick="goPage('nouvelle')">
+    <span style="font-size:1.6rem;background:#1565C0;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-14px;box-shadow:0 4px 12px rgba(21,101,192,.4);">+</span>
+    <span class="blabel">Livraison</span>
+  </div>
+  <div class="bnav" id="nav-collecteurs" onclick="goPage('collecteurs')">
+    <span class="bicon">👥</span>
+    <span class="blabel">Collecteurs</span>
+  </div>
+  <div class="bnav" id="nav-optimisation" onclick="goPage('optimisation')">
+    <span class="bicon">🤖</span>
+    <span class="blabel">IA Route</span>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function selectVeh(el) {
+  document.querySelectorAll('[onclick="selectVeh(this)"]').forEach(e => {
+    e.style.border = '2px solid #DDEEFF';
+    e.style.background = '#F0F5FF';
+    e.querySelector('div:last-child').style.color = '#8aaa8a';
+  });
+  el.style.border = '2px solid #1565C0';
+  el.style.background = '#E3F2FD';
+  el.querySelector('div:last-child').style.color = '#1565C0';
+}
+function confirmerLivraison() {
+  showToast('🚀 Livraison lancée ! Ibrahim Bello notifié');
+  setTimeout(() => { showToast('📍 Suivi GPS activé — AMB-2860 créé'); goPage('accueil'); }, 1500);
+}
+document.getElementById('liv-date').valueAsDate = new Date(Date.now() + 2*24*60*60*1000);
+</script>
+</body>
+</html>
